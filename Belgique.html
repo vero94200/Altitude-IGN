@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Altitude Belgique</title>
+<style>
+  :root { --bg:#fff; --fg:#1b1f24; --muted:#5b6570; --card:#f2f4f7; --accent:#0b57d0; --err:#b3261e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171a; --fg:#e8eaed; --muted:#9aa4af; --card:#20252b; --accent:#8ab4f8; --err:#f2b8b5; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg);
+         font:16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; max-width:640px; margin-inline:auto; }
+  h1 { font-size:1.3rem; margin:4px 0 12px; }
+  label { display:block; font-size:.9rem; color:var(--muted); margin:12px 0 4px; }
+  input, select, textarea, button { font:inherit; padding:12px; border-radius:10px;
+         border:1px solid var(--muted); background:var(--card); color:var(--fg); }
+  input, select, textarea { width:100%; }
+  textarea { min-height:90px; resize:vertical; }
+  button { background:var(--accent); color:#fff; border:0; font-weight:600; margin-top:14px; width:100%; cursor:pointer; }
+  button.sec { background:var(--card); color:var(--fg); border:1px solid var(--muted); margin-top:10px; }
+  button:disabled { opacity:.5; cursor:default; }
+  .tabs { display:flex; gap:8px; margin:6px 0 4px; }
+  .tabs button { margin:0; padding:10px; font-weight:600; }
+  .tabs button.active { background:var(--accent); color:#fff; }
+  .tabs button:not(.active) { background:var(--card); color:var(--fg); border:1px solid var(--muted); }
+  .mode { display:none; }
+  .mode.on { display:block; }
+  #res { margin-top:18px; padding:14px; background:var(--card); border-radius:12px; display:none; }
+  #alt { font-size:2rem; font-weight:700; }
+  #city { font-size:1.1rem; font-weight:600; margin-top:2px; }
+  .err { color:var(--err); }
+  .small { font-size:.85rem; color:var(--muted); word-break:break-all; }
+  table { width:100%; border-collapse:collapse; margin-top:12px; font-size:.95rem; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--muted); }
+  td.r { text-align:right; font-variant-numeric:tabular-nums; }
+  a { color:var(--accent); }
+  #chart { width:100%; height:180px; }
+  #suggestions { margin-top:6px; }
+  #suggestions button { display:block; text-align:left; margin:4px 0 0; padding:8px 10px; }
+  .row2 { display:flex; gap:10px; }
+  .row2 > div { flex:1; min-width:0; }
+</style>
+</head>
+<body>
+<h1>Altitude Belgique</h1>
+
+<div class="tabs">
+  <button id="tab1" class="active">Un point</button>
+  <button id="tabN">Plusieurs points</button>
+  <button id="tabP">Profil</button>
+</div>
+
+<!-- ================= UN POINT ================= -->
+<div id="mode1" class="mode on">
+  <label for="addr">Chercher une adresse (optionnel)</label>
+  <input id="addr" placeholder="ex : Grand-Place 1, Bruxelles" autocomplete="off">
+  <div id="suggestions"></div>
+
+  <label for="coord">Coordonnées (copiées depuis Google Maps)</label>
+  <input id="coord" inputmode="text" autocomplete="off" placeholder="50.8467, 4.3525">
+
+  <label for="resource">Source</label>
+  <select id="resource"></select>
+
+  <button id="go">Obtenir l’altitude</button>
+  <button id="loc" class="sec">Utiliser ma position actuelle</button>
+
+  <div id="res">
+    <div id="alt"></div>
+    <button id="copyalt" class="sec" style="display:none">Copier l’altitude</button>
+    <div id="city"></div>
+    <div id="msg"></div>
+    <div id="precision" class="small"></div>
+    <p class="small">Point : <span id="pt"></span></p>
+    <p><a id="link" target="_blank" rel="noopener">Ouvrir la requête</a></p>
+  </div>
+</div>
+
+<!-- ================= PLUSIEURS POINTS ================= -->
+<div id="modeN" class="mode">
+  <label for="coordsN">Une coordonnée par ligne (lat, lon)</label>
+  <textarea id="coordsN" placeholder="50.8467, 4.3525
+50.4674, 4.8720
+50.6326, 5.5797"></textarea>
+
+  <label for="resourceN">Source</label>
+  <select id="resourceN"></select>
+
+  <button id="goN">Calculer les altitudes</button>
+  <button id="csv" class="sec" style="display:none">Exporter en CSV</button>
+  <div id="msgN"></div>
+  <div id="tableN"></div>
+</div>
+
+<!-- ================= PROFIL ================= -->
+<div id="modeP" class="mode">
+  <div class="row2">
+    <div>
+      <label for="ptA">Point A (lat, lon)</label>
+      <input id="ptA" placeholder="50.8467, 4.3525">
+    </div>
+    <div>
+      <label for="ptB">Point B (lat, lon)</label>
+      <input id="ptB" placeholder="50.8798, 4.4301">
+    </div>
+  </div>
+  <label for="resourceP">Source</label>
+  <select id="resourceP"></select>
+  <button id="goP">Tracer le profil</button>
+  <div id="msgP"></div>
+  <div id="profResult">
+    <svg id="chart" preserveAspectRatio="none" viewBox="0 0 600 180"><polyline id="profLine" fill="none" stroke="#0b57d0" stroke-width="2"></polyline></svg>
+    <div id="profInfo" class="small"></div>
+    <button id="csvP" class="sec" style="display:none">Exporter le profil en CSV</button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// --- Sources d'altitude ---
+// Chaque source sait construire son URL, lire la réponse et dit combien de points elle accepte par requête.
+const SOURCES = {
+  openmeteo: {
+    label: "Copernicus GLO-90 via Open-Meteo (≈ 90 m)",
+    precision: "Résolution ≈ 90 m (Copernicus DEM). Précision verticale de quelques mètres : à utiliser pour un ordre de grandeur.",
+    max: 100, delay: 0,
+    url: pts => "https://api.open-meteo.com/v1/elevation?latitude=" + pts.map(p => p.lat.toFixed(6)).join(",") +
+                "&longitude=" + pts.map(p => p.lon.toFixed(6)).join(","),
+    read: j => j.elevation || []
+  },
+  eudem: {
+    label: "EU-DEM 25 m via OpenTopoData",
+    precision: "Résolution 25 m (EU-DEM v1.1). Précision verticale d’environ ±7 m.",
+    max: 100, delay: 1100,
+    url: pts => "https://api.opentopodata.org/v1/eudem25m?locations=" +
+                pts.map(p => p.lat.toFixed(6) + "," + p.lon.toFixed(6)).join("|"),
+    read: j => (j.results || []).map(r => r.elevation)
+  },
+  ign: {
+    label: "IGN (monde) — précision variable hors de France",
+    precision: "Service IGN mondial : la précision dépend de la zone et peut être faible en Belgique (meilleure près de la frontière française).",
+    max: 50, delay: 0,
+    url: pts => "https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?lon=" + pts.map(p => p.lon.toFixed(7)).join("|") +
+                "&lat=" + pts.map(p => p.lat.toFixed(7)).join("|") + "&resource=ign_rge_alti_wld&zonly=true",
+    read: j => j.elevations || []
+  }
+};
+
+for (const id of ["resource", "resourceN", "resourceP"]) {
+  $(id).innerHTML = Object.entries(SOURCES).map(([k, s]) => '<option value="' + k + '">' + s.label + '</option>').join("");
+}
+
+async function getElevations(pts, key) {
+  const s = SOURCES[key], out = [];
+  for (let i = 0; i < pts.length; i += s.max) {
+    if (i && s.delay) await sleep(s.delay);
+    const r = await fetch(s.url(pts.slice(i, i + s.max)));
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    s.read(j).forEach(z => out.push(typeof z === "number" && z > -9990 ? z : null));
+  }
+  return out;
+}
+
+function inBelgium(p) { return p.lat >= 49.45 && p.lat <= 51.55 && p.lon >= 2.5 && p.lon <= 6.45; }
+
+// --- Onglets ---
+const tabs = { tab1:"mode1", tabN:"modeN", tabP:"modeP" };
+for (const t of Object.keys(tabs)) $(t).addEventListener("click", () => {
+  for (const k of Object.keys(tabs)) {
+    $(k).classList.toggle("active", k === t);
+    $(tabs[k]).classList.toggle("on", k === t);
+  }
+});
+
+function num(s) { return parseFloat(String(s).replace(",", ".")); }
+
+// Accepte « 50.8467, 4.3525 » ou « 50°50'48.1"N 4°21'09.0"E »
+function parse(s) {
+  s = String(s || "").trim();
+  if (!s) return null;
+  if (s.includes("°")) {
+    const re = /(\d+(?:[.,]\d+)?)\s*°\s*(?:(\d+(?:[.,]\d+)?)\s*['’′]\s*)?(?:(\d+(?:[.,]\d+)?)\s*(?:"|”|″|'')\s*)?([NSEWO])/gi;
+    let m, lat = null, lon = null;
+    while ((m = re.exec(s)) !== null) {
+      let v = num(m[1]) + (m[2] ? num(m[2]) / 60 : 0) + (m[3] ? num(m[3]) / 3600 : 0);
+      const h = m[4].toUpperCase();
+      if (h === "S" || h === "W" || h === "O") v = -v;
+      if (h === "N" || h === "S") lat = v; else lon = v;
+    }
+    if (lat === null || lon === null) return null;
+    return { lat, lon };
+  }
+  const n = s.match(/-?\d+(?:[.,]\d+)?/g);
+  if (!n || n.length < 2) return null;
+  return { lat: num(n[0]), lon: num(n[1]) };
+}
+
+// --- Commune du point (Nominatim / OpenStreetMap) ---
+const NOMINATIM = "https://nominatim.openstreetmap.org";
+let cityToken = 0;
+
+async function cityOf(p) {
+  const r = await fetch(NOMINATIM + "/reverse?format=jsonv2&zoom=10&addressdetails=1&accept-language=fr&lat=" +
+                        p.lat.toFixed(7) + "&lon=" + p.lon.toFixed(7));
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const j = await r.json();
+  const a = j.address;
+  if (!a) return null;
+  const nom = a.municipality || a.city || a.town || a.village || a.county || null;
+  if (!nom) return null;
+  return { nom, cp: a.postcode || "", region: a.state || "", pays: a.country_code || "" };
+}
+
+async function showCity(p) {
+  const el = $("city"), tok = ++cityToken;
+  el.textContent = "Commune : recherche…";
+  try {
+    const c = await cityOf(p);
+    if (tok !== cityToken) return;
+    if (!c) { el.textContent = "Commune : aucune trouvée."; return; }
+    el.textContent = c.nom + (c.cp ? " (" + c.cp + ")" : "") + (c.region ? ", " + c.region : "");
+  } catch (err) {
+    if (tok === cityToken) el.textContent = "Commune : indisponible.";
+  }
+}
+
+let accText = "";
+
+// --- Recherche d'adresse (Nominatim, limitée à la Belgique) ---
+let sugToken = 0;
+$("addr").addEventListener("input", async () => {
+  const q = $("addr").value.trim(), box = $("suggestions"), tok = ++sugToken;
+  if (q.length < 3) { box.innerHTML = ""; return; }
+  try {
+    const r = await fetch(NOMINATIM + "/search?format=jsonv2&countrycodes=be&limit=4&accept-language=fr&q=" + encodeURIComponent(q));
+    const j = await r.json();
+    if (tok !== sugToken) return;
+    box.innerHTML = "";
+    for (const f of j) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = f.display_name;
+      b.addEventListener("click", () => {
+        $("coord").value = parseFloat(f.lat).toFixed(7) + ", " + parseFloat(f.lon).toFixed(7);
+        $("addr").value = f.display_name;
+        box.innerHTML = "";
+      });
+      box.appendChild(b);
+    }
+  } catch (e) { if (tok === sugToken) box.innerHTML = ""; }
+});
+
+// --- Mode un point ---
+$("loc").addEventListener("click", () => {
+  const box = $("res"), msg = $("msg");
+  const fail = t => { box.style.display = "block"; $("alt").textContent = ""; $("city").textContent = ""; msg.className = "err"; msg.textContent = t;
+                      $("pt").textContent = ""; $("link").removeAttribute("href"); };
+  if (!navigator.geolocation) { fail("La localisation n’est pas disponible sur cet appareil ou ce navigateur."); return; }
+  box.style.display = "block"; $("alt").textContent = ""; msg.className = ""; msg.textContent = "Recherche de la position…";
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      $("coord").value = pos.coords.latitude.toFixed(7) + ", " + pos.coords.longitude.toFixed(7);
+      accText = " (précision GPS ± " + Math.round(pos.coords.accuracy) + " m)";
+      $("go").click();
+    },
+    err => fail(err.code === 1
+      ? "Localisation refusée. Autorise-la pour ce site dans les réglages du navigateur, ou colle les coordonnées à la main."
+      : "Position introuvable. Réessaie à l’extérieur ou colle les coordonnées à la main."),
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+  );
+});
+
+$("go").addEventListener("click", async () => {
+  const box = $("res"), alt = $("alt"), msg = $("msg");
+  box.style.display = "block"; alt.textContent = ""; msg.textContent = ""; msg.className = "";
+  $("copyalt").style.display = "none";
+  cityToken++; $("city").textContent = "";
+  const p = parse($("coord").value);
+  if (!p || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180 || isNaN(p.lat) || isNaN(p.lon)) {
+    msg.className = "err"; msg.textContent = "Coordonnées non reconnues. Exemple : 50.8467, 4.3525";
+    $("pt").textContent = ""; $("link").removeAttribute("href"); return;
+  }
+  const key = $("resource").value, src = SOURCES[key];
+  $("pt").textContent = "lat " + p.lat.toFixed(7) + ", lon " + p.lon.toFixed(7) + accText;
+  accText = "";
+  $("link").href = src.url([p]);
+  $("precision").textContent = src.precision + (inBelgium(p) ? "" : " ⚠ Ce point semble hors de Belgique.");
+  showCity(p);
+  msg.textContent = "Interrogation du service d’altitude…";
+  try {
+    const z = (await getElevations([p], key))[0];
+    if (typeof z === "number") {
+      alt.textContent = z.toFixed(1) + " m";
+      $("copyalt").style.display = "block";
+      msg.textContent = "";
+    } else {
+      msg.className = "err";
+      msg.textContent = "Pas d’altitude pour ce point (hors couverture de cette source). Essaie une autre source.";
+    }
+  } catch (e) {
+    msg.className = "err";
+    msg.textContent = "Lecture directe impossible. Touche « Ouvrir la requête » pour voir la réponse brute, ou essaie une autre source.";
+  }
+});
+
+$("copyalt").addEventListener("click", () => navigator.clipboard.writeText($("alt").textContent.replace(" m", "").trim()));
+
+// --- Mode plusieurs points ---
+let lastMulti = [];
+
+$("goN").addEventListener("click", async () => {
+  const msg = $("msgN");
+  msg.textContent = ""; msg.className = "";
+  const lines = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
+  const pts = lines.map(parse);
+  if (!pts.length || pts.some(p => !p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180)) {
+    msg.className = "err"; msg.textContent = "Au moins une ligne n’est pas reconnue. Une coordonnée par ligne, ex : 50.8467, 4.3525";
+    return;
+  }
+  msg.textContent = "Interrogation du service d’altitude (" + pts.length + " points)…";
+  try {
+    const zs = await getElevations(pts, $("resourceN").value);
+    lastMulti = pts.map((p, i) => ({ ...p, z: zs[i], ligne: i + 1 }));
+    msg.textContent = "";
+    $("csv").style.display = "block";
+    renderMulti();
+  } catch (e) {
+    msg.className = "err";
+    msg.textContent = "Erreur lors de l’interrogation du service d’altitude (réseau ou quota). Essaie une autre source.";
+  }
+});
+
+// Les communes sont cherchées une par une (Nominatim limite à ~1 requête/seconde), et seulement jusqu'à 20 points.
+let renderToken = 0;
+async function renderMulti() {
+  const tok = ++renderToken, tbl = $("tableN");
+  const withCity = lastMulti.length <= 20;
+  let html = "<table><tr><th>#</th><th>Latitude</th><th>Longitude</th><th>Altitude</th>" + (withCity ? "<th>Commune</th>" : "") + "</tr>";
+  for (const p of lastMulti) {
+    html += "<tr><td>" + p.ligne + "</td><td>" + p.lat.toFixed(6) + "</td><td>" + p.lon.toFixed(6) + "</td><td class='r'>" +
+            (p.z != null ? p.z.toFixed(1) + " m" : "—") + "</td>" + (withCity ? "<td id='com" + p.ligne + "'>…</td>" : "") + "</tr>";
+  }
+  html += "</table>";
+  if (!withCity) html += "<p class='small'>Plus de 20 points : la colonne Commune est omise.</p>";
+  tbl.innerHTML = html;
+  if (!withCity) return;
+  for (const p of lastMulti) {
+    if (tok !== renderToken) return;
+    let com = "";
+    try { const c = await cityOf(p); com = c ? c.nom : ""; } catch (e) { com = "indisponible"; }
+    const cell = $("com" + p.ligne);
+    if (cell) cell.textContent = com;
+    await sleep(1100);
+  }
+}
+
+$("csv").addEventListener("click", () => {
+  const rows = [["ligne", "latitude", "longitude", "altitude_m"]];
+  for (const p of lastMulti) rows.push([p.ligne, p.lat, p.lon, p.z != null ? p.z.toFixed(1) : ""]);
+  downloadCSV(rows, "altitudes-belgique.csv");
+});
+
+function downloadCSV(rows, name) {
+  const csv = rows.map(r => r.join(";")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
+  a.download = name;
+  a.click();
+}
+
+// --- Mode profil ---
+let lastProfile = [];
+
+$("goP").addEventListener("click", async () => {
+  const msg = $("msgP");
+  msg.textContent = ""; msg.className = "";
+  $("csvP").style.display = "none";
+  const A = parse($("ptA").value), B = parse($("ptB").value);
+  if (!A || !B || isNaN(A.lat) || isNaN(B.lat)) {
+    msg.className = "err"; msg.textContent = "Coordonnées A ou B non reconnues.";
+    return;
+  }
+  msg.textContent = "Calcul du profil (100 points)…";
+  const N = 100, pts = [];
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    pts.push({ lat: A.lat + (B.lat - A.lat) * t, lon: A.lon + (B.lon - A.lon) * t });
+  }
+  try {
+    const z = await getElevations(pts, $("resourceP").value);
+    if (!z.length || z.every(v => v === null)) { msg.className = "err"; msg.textContent = "Pas de données pour ce tracé (hors couverture)."; return; }
+    lastProfile = z.map((zi, i) => ({ i: i + 1, z: zi }));
+    drawProfile(z);
+    const valid = z.filter(v => v !== null);
+    const dPlus = valid.reduce((s, v, i) => i && valid[i - 1] < v ? s + (v - valid[i - 1]) : s, 0);
+    const dMoins = valid.reduce((s, v, i) => i && valid[i - 1] > v ? s + (valid[i - 1] - v) : s, 0);
+    const dist = Math.round(Math.hypot((B.lat - A.lat) * 111320, (B.lon - A.lon) * 111320 * Math.cos(A.lat * Math.PI / 180)));
+    $("profInfo").textContent = "Distance ≈ " + dist + " m · min " + Math.min(...valid).toFixed(1) + " m · max " +
+      Math.max(...valid).toFixed(1) + " m · dénivelé + " + Math.round(dPlus) + " m / " + Math.round(dMoins) + " m";
+    msg.textContent = "";
+    $("csvP").style.display = "block";
+  } catch (e) {
+    msg.className = "err"; msg.textContent = "Erreur lors de l’interrogation du service d’altitude (réseau ou quota).";
+  }
+});
+
+function drawProfile(z) {
+  const valid = z.filter(v => v !== null);
+  const zmin = Math.min(...valid), zmax = Math.max(...valid);
+  const pad = (zmax - zmin) < 10 ? 10 : (zmax - zmin) * 0.1;
+  const lo = zmin - pad, hi = zmax + pad;
+  const W = 600, H = 180;
+  const pts = z.map((v, i) => v === null ? "" : (i / (z.length - 1)) * W + "," + (H - ((v - lo) / (hi - lo)) * H));
+  $("profLine").setAttribute("points", pts.filter(Boolean).join(" "));
+}
+
+$("csvP").addEventListener("click", () => {
+  const rows = [["rang", "altitude_m"]];
+  for (const p of lastProfile) rows.push([p.i, p.z === null ? "" : p.z.toFixed(1)]);
+  downloadCSV(rows, "profil-altimetrique.csv");
+});
+</script>
+</body>
+</html>
