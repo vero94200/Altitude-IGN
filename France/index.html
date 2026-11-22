@@ -37,11 +37,28 @@
   th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--muted); }
   td.r { text-align:right; font-variant-numeric:tabular-nums; }
   a { color:var(--accent); }
-  #chart { width:100%; height:180px; }
+  #chart { width:100%; height:auto; display:block; margin-top:14px; }
+  :root { --prof: var(--accent); }
+  .pgrid { stroke:var(--muted); opacity:.25; stroke-width:1; }
+  .ptick { stroke:var(--muted); stroke-width:1; }
+  .plab { fill:var(--muted); font-size:11px; font-family:inherit; }
+  .pline { fill:none; stroke:var(--prof); stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .parea { fill:var(--prof); opacity:.12; }
+  .pcl { stroke:var(--fg); stroke-width:1; opacity:.5; }
+  .pdot { fill:var(--prof); stroke:var(--bg); stroke-width:2; }
+  #profHover { margin-top:6px; min-height:1.4em; }
+  .stats { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-top:12px; }
+  .stats div { background:var(--card); border-radius:10px; padding:8px 10px; }
+  .stats span { display:block; font-size:.8rem; color:var(--muted); }
+  .stats b { font-size:1.05rem; font-variant-numeric:tabular-nums; }
   #suggestions { margin-top:6px; }
   #suggestions button { display:block; text-align:left; margin:4px 0 0; padding:8px 10px; }
   .row2 { display:flex; gap:10px; }
   .row2 > div { flex:1; min-width:0; }
+  .send { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-top:6px; }
+  .send button { margin-top:0; }
+  #sendMsg { min-height:1.3em; margin-top:6px; }
+  #tableN { overflow-x:auto; }
 </style>
 </head>
 <body>
@@ -72,6 +89,15 @@
   <button id="go">Obtenir l’altitude</button>
   <button id="loc" class="sec">Utiliser ma position actuelle</button>
 
+  <p>Ouvrir dans <a id="gmaps" target="_blank" rel="noopener">Google Maps</a> · <a id="amaps" target="_blank" rel="noopener">Plans (Apple)</a></p>
+
+  <div class="send">
+    <button id="toN" class="sec">Ajouter à Plusieurs points</button>
+    <button id="toA" class="sec">Définir comme point A du profil</button>
+    <button id="toB" class="sec">Définir comme point B du profil</button>
+  </div>
+  <div id="sendMsg" class="small" role="status"></div>
+
   <div id="res">
     <div id="alt"></div>
     <button id="copyalt" class="sec" style="display:none">Copier l’altitude</button>
@@ -90,6 +116,13 @@
   <textarea id="coordsN" placeholder="46.7256825, -1.5683537
 46.7301, -1.5742
 46.7185, -1.5601"></textarea>
+  <input type="file" id="fileN" accept=".txt,.csv,.gpx,text/plain,text/csv,application/gpx+xml" hidden>
+  <div class="send">
+    <button id="loadN" class="sec">Charger un fichier de points (.txt, .csv ou .gpx)</button>
+    <button id="clearN" class="sec">Vider la liste</button>
+  </div>
+  <div id="fileMsg" class="small" role="status"></div>
+  <p class="small">Une ligne par point : « latitude, longitude » (séparés par une virgule, un point-virgule ou une tabulation). Un fichier CSV avec les en-têtes latitude / longitude est aussi accepté, par exemple celui exporté par cette page. Un fichier GPX (trace, itinéraire ou points de passage) est aussi accepté. Une troisième valeur facultative sur une ligne (l’altitude du fichier GPX) est comparée à l’altitude calculée.</p>
 
   <label for="resourceN">Source</label>
   <select id="resourceN">
@@ -122,11 +155,15 @@
     <option value="ign_lidar_hd_mnt_multi_wld" selected>MNT LiDAR HD (sans interpolation)</option>
     <option value="ign_rge_alti_wld">RGE ALTI</option>
   </select>
+  <label for="nP">Nombre de points du profil</label>
+  <select id="nP"><option value="10">10</option><option value="50">50</option><option value="100" selected>100</option></select>
   <button id="goP">Tracer le profil</button>
+  <button id="swapAB" class="sec">Inverser A et B</button>
   <div id="msgP"></div>
-  <div id="profResult">
-    <svg id="chart" preserveAspectRatio="none" viewBox="0 0 600 180"><polyline id="profLine" fill="none" stroke="#0b57d0" stroke-width="2"></polyline></svg>
-    <div id="profInfo" class="small"></div>
+  <div id="profResult" style="display:none">
+    <svg id="chart" viewBox="0 0 640 260" role="img" aria-label="Profil altimétrique"></svg>
+    <div id="profHover" class="small"></div>
+    <div id="profInfo" class="stats"></div>
     <button id="csvP" class="sec" style="display:none">Exporter le profil en CSV</button>
   </div>
 </div>
@@ -147,6 +184,28 @@ for (const t of Object.keys(tabs)) $(t).addEventListener("click", () => {
 function num(s) { return parseFloat(String(s).replace(",", ".")); }
 function frDay(iso) { return iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(0, 4); }
 function isoDay(s) { const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[0] : null; }
+
+// Liens Google Maps / Plans (Apple) pour le point courant
+function setMapLinks(lat, lon) {
+  const q = lat.toFixed(7) + "," + lon.toFixed(7);
+  $("gmaps").href = "https://www.google.com/maps?q=" + q;
+  // S'ouvre dans Plans sur iPhone/iPad/Mac, Google Maps sur Android
+  $("amaps").href = "https://maps.apple.com/?q=" + q;
+}
+// Sans coordonnées valides, les liens restent actifs et ouvrent simplement l'application de cartes
+function clearMapLinks() {
+  $("gmaps").href = "https://www.google.com/maps";
+  $("amaps").href = "https://maps.apple.com/";
+}
+
+// Liens mis à jour en direct dès que les coordonnées sont reconnues
+function updateMapLinksFromInput() {
+  const p = parse($("coord").value);
+  if (p && !isNaN(p.lat) && !isNaN(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180) setMapLinks(p.lat, p.lon);
+  else clearMapLinks();
+}
+$("coord").addEventListener("input", updateMapLinksFromInput);
+updateMapLinksFromInput();
 
 // Précision indicative des sources
 const PRECISION = {
@@ -272,6 +331,7 @@ $("addr").addEventListener("input", async () => {
         $("coord").value = lat.toFixed(7) + ", " + lon.toFixed(7);
         $("addr").value = f.properties.label;
         box.innerHTML = "";
+        updateMapLinksFromInput();
       });
       box.appendChild(b);
     }
@@ -282,7 +342,7 @@ $("addr").addEventListener("input", async () => {
 $("loc").addEventListener("click", () => {
   const box = $("res"), msg = $("msg");
   const fail = t => { box.style.display = "block"; $("alt").textContent = ""; $("lidarDate").textContent = ""; $("city").textContent = ""; msg.className = "err"; msg.textContent = t;
-                      $("pt").textContent = ""; $("link").removeAttribute("href"); };
+                      $("pt").textContent = ""; $("link").removeAttribute("href"); clearMapLinks(); };
   if (!navigator.geolocation) { fail("La localisation n’est pas disponible sur cet appareil ou ce navigateur."); return; }
   box.style.display = "block"; $("alt").textContent = ""; msg.className = ""; msg.textContent = "Recherche de la position…";
   navigator.geolocation.getCurrentPosition(
@@ -307,13 +367,14 @@ $("go").addEventListener("click", async () => {
   const p = parse($("coord").value);
   if (!p || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180 || isNaN(p.lat) || isNaN(p.lon)) {
     msg.className = "err"; msg.textContent = "Coordonnées non reconnues. Exemple : 46.7256825, -1.5683537";
-    $("pt").textContent = ""; $("link").removeAttribute("href"); return;
+    $("pt").textContent = ""; $("link").removeAttribute("href"); clearMapLinks(); return;
   }
   const resource = $("resource").value;
   const url = BASE + "?lon=" + p.lon.toFixed(7) + "&lat=" + p.lat.toFixed(7) + "&resource=" + resource + "&zonly=true";
   $("pt").textContent = "lat " + p.lat.toFixed(7) + ", lon " + p.lon.toFixed(7) + accText;
   accText = "";
   $("link").href = url;
+  setMapLinks(p.lat, p.lon);
   $("precision").textContent = PRECISION[resource] || "";
   showCity(p);
   msg.textContent = "Interrogation de l’IGN…";
@@ -341,11 +402,36 @@ $("copyalt").addEventListener("click", () => navigator.clipboard.writeText($("al
 // --- Mode plusieurs points ---
 let lastMulti = [];
 
+const ELETXT = { gpx: "Altitude GPX", diff: "Écart", summary: (mean, abs, n) => "Sur " + n + (n > 1 ? " points" : " point") + " avec altitude GPX : écart moyen " + sg(mean) + ", écart absolu moyen " + abs.toFixed(1) + " m (GPX − source)." };
+const sg = d => (d > 0 ? "+" : d < 0 ? "−" : "") + Math.abs(d).toFixed(1) + " m";
+// Une ligne peut porter une 3e valeur : l'altitude relevée par l'appareil (fichier GPX), comparée à l'altitude calculée
+function lineEle(l) {
+  if (l.includes("°")) return null;
+  const n = l.match(/-?\d+(?:[.,]\d+)?/g);
+  return n && n.length >= 3 ? num(n[2]) : null;
+}
+const hasEle = () => lastMulti.some(p => p.ele != null && !isNaN(p.ele));
+const diffOf = p => (p.ele != null && !isNaN(p.ele) && p.z != null && p.z > -99990) ? p.ele - p.z : null;
+const eleHead = () => hasEle() ? "<th>" + ELETXT.gpx + "</th><th>" + ELETXT.diff + "</th>" : "";
+function eleCells(p) {
+  if (!hasEle()) return "";
+  const d = diffOf(p);
+  return "<td class='r'>" + (p.ele != null && !isNaN(p.ele) ? p.ele.toFixed(1) + " m" : "—") + "</td><td class='r'>" + (d !== null ? sg(d) : "—") + "</td>";
+}
+function eleSummary() {
+  if (!hasEle()) return "";
+  const ds = lastMulti.map(diffOf).filter(d => d !== null);
+  if (!ds.length) return "";
+  const mean = ds.reduce((s, d) => s + d, 0) / ds.length, abs = ds.reduce((s, d) => s + Math.abs(d), 0) / ds.length;
+  return "<p class='small'>" + ELETXT.summary(mean, abs, ds.length) + "</p>";
+}
+
 $("goN").addEventListener("click", async () => {
   const msg = $("msgN");
   msg.textContent = ""; msg.className = "";
   const lines = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
   const pts = lines.map(parse);
+  const eles = lines.map(lineEle);
   if (!pts.length || pts.some(p => !p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180)) {
     msg.className = "err"; msg.textContent = "Au moins une ligne n’est pas reconnue. Une coordonnée par ligne, ex : 46.7256825, -1.5683537";
     return;
@@ -363,7 +449,7 @@ $("goN").addEventListener("click", async () => {
       const j = await r.json();
       (j.elevations || []).forEach(z => zs.push(typeof z === "number" ? z : null));
     }
-    lastMulti = pts.map((p, i) => ({ ...p, z: zs[i], ligne: i + 1 }));
+    lastMulti = pts.map((p, i) => ({ ...p, z: zs[i], ligne: i + 1, ele: eles[i] }));
     msg.textContent = "";
     $("csv").style.display = "block";
     renderMulti();
@@ -375,7 +461,7 @@ $("goN").addEventListener("click", async () => {
 
 async function renderMulti() {
   const tbl = $("tableN");
-  let html = "<table><tr><th>#</th><th>Latitude</th><th>Longitude</th><th>Altitude</th><th>Commune</th></tr>";
+  let html = "<table><tr><th>#</th><th>Latitude</th><th>Longitude</th><th>Altitude</th>" + eleHead() + "<th>Commune</th><th>Carte</th></tr>";
   for (const p of lastMulti) {
     let com = "";
     try {
@@ -383,16 +469,24 @@ async function renderMulti() {
       const j = await r.json();
       com = j.length ? j[0].nom : "";
     } catch (e) {}
+    const q = p.lat.toFixed(7) + "," + p.lon.toFixed(7);
     html += "<tr><td>" + p.ligne + "</td><td>" + p.lat.toFixed(6) + "</td><td>" + p.lon.toFixed(6) + "</td><td class='r'>" +
-            (p.z != null && p.z > -99990 ? p.z.toFixed(2) + " m" : "—") + "</td><td>" + com + "</td></tr>";
+            (p.z != null && p.z > -99990 ? p.z.toFixed(2) + " m" : "—") + "</td>" + eleCells(p) + "<td>" + com +
+            "</td><td><a target=\"_blank\" rel=\"noopener\" href=\"https://maps.apple.com/?q=" + q + "\">Plans</a> · " +
+            "<a target=\"_blank\" rel=\"noopener\" href=\"https://www.google.com/maps?q=" + q + "\">Maps</a></td></tr>";
   }
   html += "</table>";
+  html += eleSummary();
   tbl.innerHTML = html;
 }
 
 $("csv").addEventListener("click", () => {
   const rows = [["ligne", "latitude", "longitude", "altitude_m"]];
   for (const p of lastMulti) rows.push([p.ligne, p.lat, p.lon, p.z != null && p.z > -99990 ? p.z.toFixed(2) : ""]);
+  if (hasEle()) {
+    rows[0].push("altitude_gpx_m", "ecart_m");
+    lastMulti.forEach((p, i) => { const d = diffOf(p); rows[i + 1].push(p.ele != null && !isNaN(p.ele) ? p.ele.toFixed(2) : "", d !== null ? d.toFixed(2) : ""); });
+  }
   downloadCSV(rows, "altitudes-ign.csv");
 });
 
@@ -404,60 +498,271 @@ function downloadCSV(rows, name) {
   a.click();
 }
 
+// --- Charger un fichier de points (.txt ou .csv) dans « Plusieurs points » ---
+(function () {
+  const MAX = 1000;
+  const T = { thin: (n, m) => "Trace réduite de " + n + " à " + m + " points (échantillonnage régulier).", none: "Aucun point reconnu dans ce fichier.", err: "Lecture du fichier impossible.", cap: "Fichier limité aux 1000 premiers points.", added: (n, s) => n + (n > 1 ? " points ajoutés" : " point ajouté") + (s ? " (" + s + (s > 1 ? " lignes ignorées" : " ligne ignorée") + ")" : "") + "." };
+  const say = (t, err) => { const m = $("fileMsg"); m.textContent = t; m.className = "small" + (err ? " err" : ""); };
+  const fmtPt = p => p.lat.toFixed(7) + ", " + p.lon.toFixed(7) + (p.ele != null && !isNaN(p.ele) ? ", " + Math.round(p.ele * 100) / 100 : "");
+  const valid = p => p && !isNaN(p.lat) && !isNaN(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180;
+
+  function parseGpx(text) {
+    const doc = new DOMParser().parseFromString(text, "application/xml");
+    if (doc.getElementsByTagName("parsererror").length) return null;
+    let nodes = doc.getElementsByTagName("trkpt");
+    if (!nodes.length) nodes = doc.getElementsByTagName("rtept");
+    if (!nodes.length) nodes = doc.getElementsByTagName("wpt");
+    const pts = []; let skipped = 0;
+    for (const n of nodes) {
+      const e = n.getElementsByTagName("ele")[0];
+      const p = { lat: num(n.getAttribute("lat")), lon: num(n.getAttribute("lon")), ele: e ? num(e.textContent) : NaN };
+      if (valid(p)) pts.push(fmtPt(p)); else skipped++;
+    }
+    return { pts, skipped };
+  }
+
+  function parsePointsFile(text) {
+    const lines = text.replace(/^\ufeff/, "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const pts = []; let skipped = 0, latI = -1, lonI = -1, eleI = -1, delim = ",", start = 0;
+    if (lines.length && /[a-z]/i.test(lines[0]) && !lines[0].includes("°")) {   // première ligne = en-têtes
+      const h = lines[0];
+      delim = h.includes(";") ? ";" : h.includes("\t") ? "\t" : ",";
+      const cols = h.split(delim).map(c => c.trim().toLowerCase());
+      latI = cols.findIndex(c => /^(lat|latitude|breedtegraad)/.test(c));
+      lonI = cols.findIndex(c => /^(lon|lng|long|longitude|lengtegraad)/.test(c));
+      eleI = cols.findIndex(c => /^(ele|elevation|altitude_gpx|hoogte_gps|alt_gps)/.test(c));
+      start = 1;
+    }
+    for (let i = start; i < lines.length; i++) {
+      const line = lines[i]; let p = null;
+      if (latI >= 0 && lonI >= 0) {
+        const f = line.split(delim);
+        p = { lat: num(f[latI]), lon: num(f[lonI]), ele: eleI >= 0 ? num(f[eleI]) : NaN };
+      } else if (line.includes(";") || line.includes("\t")) {
+        const n = line.split(/[;\t]/).map(num).filter(v => !isNaN(v));
+        p = n.length >= 2 ? { lat: n[0], lon: n[1] } : null;
+      } else {
+        p = parse(line);
+      }
+      if (valid(p)) pts.push(fmtPt(p)); else skipped++;
+    }
+    return { pts, skipped };
+  }
+
+  $("clearN").addEventListener("click", () => {
+    $("coordsN").value = ""; $("fileMsg").textContent = "";
+    $("tableN").innerHTML = ""; $("msgN").textContent = ""; $("csv").style.display = "none";
+    lastMulti = [];
+    if (typeof renderToken !== "undefined") renderToken++;
+  });
+  $("loadN").addEventListener("click", () => $("fileN").click());
+  $("fileN").addEventListener("change", () => {
+    const file = $("fileN").files && $("fileN").files[0];
+    if (!file) return;
+    const rd = new FileReader();
+    rd.onerror = () => say(T.err, true);
+    rd.onload = () => {
+      const text = String(rd.result || "");
+      const gpx = /<gpx[\s>]/i.test(text);
+      const r = gpx ? parseGpx(text) : parsePointsFile(text);
+      if (!r || !r.pts.length) { say(T.none, true); return; }
+      let pts = r.pts, note = "";
+      const cur = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
+      const room = Math.max(0, MAX - cur.length);
+      if (pts.length > room) {
+        if (gpx && room > 1) {   // une trace GPX est réduite régulièrement pour garder sa forme complète
+          const n = pts.length;
+          pts = Array.from({ length: room }, (_, i) => pts[Math.round(i * (n - 1) / (room - 1))]);
+          note = " " + T.thin(n, room);
+        } else { pts = pts.slice(0, room); note = " " + T.cap; }
+      }
+      $("coordsN").value = cur.concat(pts).join("\n");
+      say(T.added(pts.length, r.skipped) + note);
+    };
+    rd.readAsText(file);
+    $("fileN").value = "";
+  });
+})();
+
+// --- Envoyer le point courant vers « Plusieurs points » ou « Profil » ---
+(function () {
+  const T = { bad: "Coordonnées non reconnues. Saisis d’abord un point.", dup: "Ce point est déjà dans « Plusieurs points ».", added: n => "Point ajouté à « Plusieurs points » (" + n + (n > 1 ? " points" : " point") + " au total).", seta: "Point A du profil défini.", setb: "Point B du profil défini." };
+  const say = (t, err) => { const m = $("sendMsg"); m.textContent = t; m.className = "small" + (err ? " err" : ""); };
+  const current = () => {
+    const p = parse($("coord").value);
+    if (!p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180) { say(T.bad, true); return null; }
+    return p.lat.toFixed(7) + ", " + p.lon.toFixed(7);
+  };
+  $("toN").addEventListener("click", () => {
+    const line = current(); if (!line) return;
+    const lines = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
+    if (lines.includes(line)) { say(T.dup); return; }
+    lines.push(line);
+    $("coordsN").value = lines.join("\n");
+    say(T.added(lines.length));
+  });
+  $("toA").addEventListener("click", () => { const line = current(); if (line) { $("ptA").value = line; say(T.seta); } });
+  $("toB").addEventListener("click", () => { const line = current(); if (line) { $("ptB").value = line; say(T.setb); } });
+  $("coord").addEventListener("input", () => { $("sendMsg").textContent = ""; });
+})();
+
 // --- Mode profil ---
 let lastProfile = [];
+
+const PROFTXT = {
+  hint: "Touchez ou survolez la courbe pour lire l’altitude.",
+  hoverD: "Distance", hoverZ: "Altitude", noPoint: "pas de données",
+  badCoords: "Coordonnées A ou B non reconnues.",
+  samePoint: "Les points A et B sont identiques.",
+  computing: n => "Calcul du profil (" + n + " points)…",
+  noData: "Pas de données pour ce tracé (hors couverture).",
+  error: "Erreur lors de l’interrogation de l’API IGN (réseau ou quota).",
+  stats: { dist: "Distance", pente: "Pente moyenne", start: "Départ", end: "Arrivée", min: "Minimum", max: "Maximum", up: "Montée cumulée", down: "Descente cumulée" }
+};
+
+function haversine(a, b) {
+  const R = 6371008.8, rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad, dLon = (b.lon - a.lon) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function fmtDist(m) { return m < 1000 ? Math.round(m) + " m" : parseFloat((m / 1000).toFixed(m < 10000 ? 2 : 1)) + " km"; }
+
+function niceStep(range, target) {
+  const raw = range / target, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+}
+
+async function profElevations(pts, resource) {
+  const out = [];
+  for (let i = 0; i < pts.length; i += 50) {
+    const b = pts.slice(i, i + 50);
+    const url = BASE + "?lon=" + b.map(p => p.lon.toFixed(7)).join("|") + "&lat=" + b.map(p => p.lat.toFixed(7)).join("|") +
+                "&resource=" + resource + "&zonly=true";
+    const r = await fetch(url);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    (j.elevations || []).forEach(v => out.push(typeof v === "number" && v > -99990 ? v : null));
+  }
+  return out;
+}
+
+$("swapAB").addEventListener("click", () => {
+  const a = $("ptA").value; $("ptA").value = $("ptB").value; $("ptB").value = a;
+});
 
 $("goP").addEventListener("click", async () => {
   const msg = $("msgP");
   msg.textContent = ""; msg.className = "";
   $("csvP").style.display = "none";
   const A = parse($("ptA").value), B = parse($("ptB").value);
-  if (!A || !B || isNaN(A.lat) || isNaN(B.lat)) {
-    msg.className = "err"; msg.textContent = "Coordonnées A ou B non reconnues.";
-    return;
-  }
-  msg.textContent = "Calcul du profil (100 points)…";
-  const N = 100, lons = [], lats = [];
+  const bad = p => !p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180;
+  if (bad(A) || bad(B)) { msg.className = "err"; msg.textContent = PROFTXT.badCoords; return; }
+  const total = haversine(A, B);
+  if (total < 1) { msg.className = "err"; msg.textContent = PROFTXT.samePoint; return; }
+  const N = parseInt($("nP").value, 10) || 100, pts = [];
+  msg.textContent = PROFTXT.computing(N);
   for (let i = 0; i < N; i++) {
     const t = i / (N - 1);
-    lats.push((A.lat + (B.lat - A.lat) * t).toFixed(7));
-    lons.push((A.lon + (B.lon - A.lon) * t).toFixed(7));
+    pts.push({ lat: A.lat + (B.lat - A.lat) * t, lon: A.lon + (B.lon - A.lon) * t });
   }
   try {
-    const url = BASE + "?lon=" + lons.join("|") + "&lat=" + lats.join("|") +
-                "&resource=" + $("resourceP").value + "&zonly=true";
-    const r = await fetch(url);
-    const j = await r.json();
-    const z = (j.elevations || []).map(v => (typeof v === "number" && v > -99990) ? v : null);
-    if (!z.length || z.every(v => v === null)) { msg.className = "err"; msg.textContent = "Pas de données pour ce tracé (hors couverture)."; return; }
-    lastProfile = z.map((zi, i) => i + 1).map(i => ({ i, z: z[i - 1] }));
-    drawProfile(z);
+    const z = await profElevations(pts, $("resourceP").value);
+    if (!z.length || z.every(v => v === null)) { msg.className = "err"; msg.textContent = PROFTXT.noData; return; }
+    lastProfile = z.map((zi, i) => ({ rang: i + 1, d: total * i / (N - 1), lat: pts[i].lat, lon: pts[i].lon, z: zi }));
+    $("profResult").style.display = "block";
+    drawProfile(z, total, pts);
     const valid = z.filter(v => v !== null);
+    const first = z.find(v => v !== null), last = [...z].reverse().find(v => v !== null);
     const dPlus = valid.reduce((s, v, i) => i && valid[i - 1] < v ? s + (v - valid[i - 1]) : s, 0);
     const dMoins = valid.reduce((s, v, i) => i && valid[i - 1] > v ? s + (valid[i - 1] - v) : s, 0);
-    const dist = Math.round(Math.hypot((B.lat - A.lat) * 111320, (B.lon - A.lon) * 111320 * Math.cos(A.lat * Math.PI / 180)));
-    $("profInfo").textContent = "Distance ≈ " + dist + " m · min " + Math.min(...valid).toFixed(1) + " m · max " +
-      Math.max(...valid).toFixed(1) + " m · dénivelé + " + Math.round(dPlus) + " m / " + Math.round(dMoins) + " m";
+    const pente = (last - first) / total * 100;
+    const T = PROFTXT.stats;
+    const items = [
+      [T.dist, fmtDist(total)], [T.pente, (pente.toFixed(1) === "-0.0" ? "0.0" : (pente > 0 ? "+" : "") + pente.toFixed(1)) + " %"],
+      [T.start, first.toFixed(1) + " m"], [T.end, last.toFixed(1) + " m"],
+      [T.min, Math.min(...valid).toFixed(1) + " m"], [T.max, Math.max(...valid).toFixed(1) + " m"],
+      [T.up, "+ " + Math.round(dPlus) + " m"], [T.down, "− " + Math.round(dMoins) + " m"]
+    ];
+    $("profInfo").innerHTML = items.map(([k, v]) => "<div><span>" + k + "</span><b>" + v + "</b></div>").join("");
     msg.textContent = "";
     $("csvP").style.display = "block";
   } catch (e) {
-    msg.className = "err"; msg.textContent = "Erreur lors de l’interrogation de l’API IGN (réseau ou quota).";
+    msg.className = "err"; msg.textContent = PROFTXT.error;
   }
 });
 
-function drawProfile(z) {
+function drawProfile(z, total, pts) {
+  const W = 640, H = 260, L = 48, R = 14, T = 12, B = 30;
   const valid = z.filter(v => v !== null);
-  const zmin = Math.min(...valid), zmax = Math.max(...valid);
-  const pad = (zmax - zmin) < 10 ? 10 : (zmax - zmin) * 0.1;
-  const lo = zmin - pad, hi = zmax + pad;
-  const W = 600, H = 180;
-  const pts = z.map((v, i) => v === null ? "" : (i / (z.length - 1)) * W + "," + (H - ((v - lo) / (hi - lo)) * H));
-  $("profLine").setAttribute("points", pts.filter(Boolean).join(" "));
+  let zmin = Math.min(...valid), zmax = Math.max(...valid);
+  if (zmax - zmin < 4) { const c = (zmax + zmin) / 2; zmin = c - 2; zmax = c + 2; }
+  const step = niceStep(zmax - zmin, 4);
+  const lo = Math.floor(zmin / step) * step, hi = Math.ceil(zmax / step) * step;
+  const PW = W - L - R, PH = H - T - B;
+  const X = i => L + (i / (z.length - 1)) * PW;
+  const Y = v => T + (1 - (v - lo) / (hi - lo)) * PH;
+  const f = n => n.toFixed(1);
+
+  let g = "";
+  for (let v = lo; v <= hi + step / 1000; v += step) {
+    const y = Y(v);
+    g += '<line class="pgrid" x1="' + L + '" x2="' + (W - R) + '" y1="' + f(y) + '" y2="' + f(y) + '"/>' +
+         '<text class="plab" x="' + (L - 6) + '" y="' + f(y + 4) + '" text-anchor="end">' + (Math.round(v * 10) / 10) + '</text>';
+  }
+  const dstep = niceStep(total, 5);
+  for (let d = 0; d <= total + dstep / 1000; d += dstep) {
+    const x = L + (d / total) * PW;
+    g += '<line class="ptick" x1="' + f(x) + '" x2="' + f(x) + '" y1="' + (H - B) + '" y2="' + (H - B + 4) + '"/>' +
+         '<text class="plab" x="' + f(x) + '" y="' + (H - B + 17) + '" text-anchor="' + (x > W - R - 20 ? "end" : "middle") + '">' + fmtDist(d) + '</text>';
+  }
+
+  // Courbe et surface, interrompues là où il n'y a pas de données
+  let line = "", area = "", run = [];
+  const flush = () => {
+    if (run.length > 1) {
+      const p = run.map(([x, y]) => f(x) + "," + f(y)).join("L");
+      line += "M" + p;
+      area += "M" + f(run[0][0]) + "," + (H - B) + "L" + p + "L" + f(run[run.length - 1][0]) + "," + (H - B) + "Z";
+    }
+    run = [];
+  };
+  z.forEach((v, i) => { if (v === null) flush(); else run.push([X(i), Y(v)]); });
+  flush();
+
+  const svg = $("chart");
+  svg.innerHTML = g + '<path class="parea" d="' + area + '"/><path class="pline" d="' + line + '"/>' +
+    '<g id="pcur" style="display:none"><line class="pcl" y1="' + T + '" y2="' + (H - B) + '"/><circle class="pdot" r="5"/></g>' +
+    '<rect id="pover" x="' + L + '" y="' + T + '" width="' + PW + '" height="' + PH + '" fill="transparent" style="touch-action:pan-y"/>';
+
+  const hover = $("profHover"), cur = $("pcur"), dot = cur.querySelector("circle"), cl = cur.querySelector("line");
+  hover.textContent = PROFTXT.hint;
+  const at = clientX => {
+    const r = svg.getBoundingClientRect();
+    const vx = (clientX - r.left) / r.width * W;
+    const i = Math.max(0, Math.min(z.length - 1, Math.round((vx - L) / PW * (z.length - 1))));
+    const x = X(i);
+    cl.setAttribute("x1", f(x)); cl.setAttribute("x2", f(x));
+    if (z[i] === null) {
+      dot.style.display = "none";
+      hover.textContent = PROFTXT.hoverD + " " + fmtDist(total * i / (z.length - 1)) + " · " + PROFTXT.noPoint;
+    } else {
+      dot.style.display = ""; dot.setAttribute("cx", f(x)); dot.setAttribute("cy", f(Y(z[i])));
+      hover.textContent = PROFTXT.hoverD + " " + fmtDist(total * i / (z.length - 1)) + " · " + PROFTXT.hoverZ + " " + z[i].toFixed(1) + " m · " +
+        pts[i].lat.toFixed(5) + ", " + pts[i].lon.toFixed(5);
+    }
+    cur.style.display = "";
+  };
+  const over = $("pover");
+  over.addEventListener("pointermove", e => at(e.clientX));
+  over.addEventListener("pointerdown", e => at(e.clientX));
+  over.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") { cur.style.display = "none"; hover.textContent = PROFTXT.hint; } });
 }
 
 $("csvP").addEventListener("click", () => {
-  const rows = [["rang", "altitude_m"]];
-  for (const p of lastProfile) rows.push([p.i, p.z === null ? "" : p.z.toFixed(2)]);
+  const rows = [["rang", "distance_m", "latitude", "longitude", "altitude_m"]];
+  for (const p of lastProfile) rows.push([p.rang, Math.round(p.d), p.lat.toFixed(7), p.lon.toFixed(7), p.z === null ? "" : p.z.toFixed(2)]);
   downloadCSV(rows, "profil-altimetrique.csv");
 });
 </script>
