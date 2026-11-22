@@ -1,241 +1,721 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="nl-BE">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Altitude – France et Belgique / Hoogte – Frankrijk en België</title>
-<meta name="description" content="Connaître l’altitude d’un point en France et en Belgique. / De hoogte van een punt kennen in Frankrijk en België.">
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hoogte België</title>
 <style>
-:root {
-    --bg: #edf1f2;
-    --surface: #ffffff;
-    --ink: #12303d;
-    --muted: #54707c;
-    --line: #cdd9dd;
-    --contour: #2f7f86;
-    --focus: #0b57d0;
-}
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg: #0f1a1f;
-        --surface: #172429;
-        --ink: #e6eff1;
-        --muted: #9db4bc;
-        --line: #2b3d44;
-        --contour: #5db3bb;
-        --focus: #8ab4f8;
-    }
-}
-
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    min-height: 100vh;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    line-height: 1.5;
-}
-
-.page {
-    width: 100%;
-    max-width: 540px;
-    margin: 0 auto;
-    padding: 0 20px 40px;
-}
-
-/* ---------- En-tête ---------- */
-header {
-    position: relative;
-    padding: 56px 0 28px;
-    overflow: hidden;
-}
-
-.contours {
-    position: absolute;
-    right: -60px;
-    top: 0;
-    width: 340px;
-    height: 100%;
-    color: var(--contour);
-    opacity: .35;
-    pointer-events: none;
-}
-
-h1 {
-    position: relative;
-    margin: 0;
-    font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-    font-size: clamp(2.6rem, 11vw, 3.6rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1;
-}
-
-.baseline {
-    position: relative;
-    margin: 16px 0 0;
-    max-width: 30em;
-    font-size: 1.05rem;
-}
-
-.baseline .nl {
-    display: block;
-    margin-top: 2px;
-    color: var(--muted);
-}
-
-/* ---------- Choix du pays ---------- */
-h2 {
-    margin: 12px 0 14px;
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-h2 .nl {
-    color: var(--muted);
-    font-weight: 400;
-}
-
-ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 12px;
-}
-
-.pays {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 44px 16px 16px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    color: inherit;
-    text-decoration: none;
-    transition: border-color .15s, background-color .15s;
-}
-
-.pays:hover { border-color: var(--contour); }
-
-.pays:focus-visible {
-    outline: 3px solid var(--focus);
-    outline-offset: 2px;
-}
-
-/* chevron */
-.pays::after {
-    content: "";
-    position: absolute;
-    right: 18px;
-    top: 50%;
-    width: 9px;
-    height: 9px;
-    border-top: 2px solid var(--muted);
-    border-right: 2px solid var(--muted);
-    transform: translateY(-50%) rotate(45deg);
-}
-
-.drapeau {
-    flex: none;
-    width: 42px;
-    height: 28px;
-    border-radius: 3px;
-    box-shadow: 0 0 0 1px var(--line);
-}
-.fr { background: linear-gradient(to right, #0055a4 0 33.3%, #ffffff 33.3% 66.6%, #ef4135 66.6% 100%); }
-.be { background: linear-gradient(to right, #000000 0 33.3%, #fae042 33.3% 66.6%, #ed2939 66.6% 100%); }
-
-.texte { min-width: 0; }
-
-.nom {
-    display: block;
-    font-size: 1.15rem;
-    font-weight: 600;
-    line-height: 1.25;
-}
-
-.detail {
-    display: block;
-    margin-top: 2px;
-    font-size: .9rem;
-    color: var(--muted);
-}
-
-/* ---------- Pied de page ---------- */
-footer {
-    margin-top: 32px;
-    font-size: .85rem;
-    color: var(--muted);
-}
-footer p { margin: 0 0 2px; }
+  :root { --bg:#fff; --fg:#1b1f24; --muted:#5b6570; --card:#f2f4f7; --accent:#0b57d0; --btn:#c62828; --err:#b3261e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171a; --fg:#e8eaed; --muted:#9aa4af; --card:#20252b; --accent:#8ab4f8; --btn:#d32f2f; --err:#f2b8b5; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg);
+         font:16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; max-width:640px; margin-inline:auto; }
+  h1 { font-size:1.3rem; margin:4px 0 12px; }
+  label { display:block; font-size:.9rem; color:var(--muted); margin:12px 0 4px; }
+  input, select, textarea, button { font:inherit; padding:12px; border-radius:10px;
+         border:1px solid var(--muted); background:var(--card); color:var(--fg); }
+  input, select, textarea { width:100%; }
+  textarea { min-height:90px; resize:vertical; }
+  button { background:var(--btn); color:#fff; border:0; font-weight:600; margin-top:14px; width:100%; cursor:pointer; }
+  button.sec { background:var(--card); color:var(--fg); border:1px solid var(--muted); margin-top:10px; }
+  button:disabled { opacity:.5; cursor:default; }
+  .tabs { display:flex; gap:8px; margin:6px 0 4px; }
+  .tabs button { margin:0; padding:10px; font-weight:600; }
+  .tabs button.active { background:var(--btn); color:#fff; }
+  .tabs button:not(.active) { background:var(--card); color:var(--fg); border:1px solid var(--muted); }
+  .mode { display:none; }
+  .mode.on { display:block; }
+  #res { margin-top:18px; padding:14px; background:var(--card); border-radius:12px; display:none; }
+  #alt { font-size:2rem; font-weight:700; }
+  #city { font-size:1.1rem; font-weight:600; margin-top:2px; }
+  .err { color:var(--err); }
+  .small { font-size:.85rem; color:var(--muted); word-break:break-all; }
+  table { width:100%; border-collapse:collapse; margin-top:12px; font-size:.95rem; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--muted); }
+  td.r { text-align:right; font-variant-numeric:tabular-nums; }
+  a { color:var(--accent); }
+  #chart { width:100%; height:auto; display:block; margin-top:14px; }
+  :root { --prof: var(--btn); }
+  .pgrid { stroke:var(--muted); opacity:.25; stroke-width:1; }
+  .ptick { stroke:var(--muted); stroke-width:1; }
+  .plab { fill:var(--muted); font-size:11px; font-family:inherit; }
+  .pline { fill:none; stroke:var(--prof); stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .parea { fill:var(--prof); opacity:.12; }
+  .pcl { stroke:var(--fg); stroke-width:1; opacity:.5; }
+  .pdot { fill:var(--prof); stroke:var(--bg); stroke-width:2; }
+  #profHover { margin-top:6px; min-height:1.4em; }
+  .stats { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-top:12px; }
+  .stats div { background:var(--card); border-radius:10px; padding:8px 10px; }
+  .stats span { display:block; font-size:.8rem; color:var(--muted); }
+  .stats b { font-size:1.05rem; font-variant-numeric:tabular-nums; }
+  #suggestions { margin-top:6px; }
+  #suggestions button { display:block; text-align:left; margin:4px 0 0; padding:8px 10px; }
+  .row2 { display:flex; gap:10px; }
+  .row2 > div { flex:1; min-width:0; }
+  .send { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-top:6px; }
+  .send button { margin-top:0; }
+  #sendMsg { min-height:1.3em; margin-top:6px; }
+  #tableN { overflow-x:auto; }
 </style>
 </head>
-
 <body>
-<div class="page">
+<h1>Hoogte België</h1>
 
-    <header>
-        <svg class="contours" viewBox="0 0 340 260" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-            <path d="M20 190 C 40 90, 140 40, 230 70 S 330 160, 280 220 S 120 250, 60 230 S 5 215, 20 190Z"/>
-            <path d="M55 185 C 70 110, 145 72, 215 92 S 296 160, 258 205 S 130 228, 88 212 S 45 205, 55 185Z"/>
-            <path d="M92 180 C 102 128, 152 104, 200 116 S 258 160, 232 192 S 140 208, 114 198 S 86 192, 92 180Z"/>
-            <path d="M128 172 C 134 148, 160 138, 186 144 S 214 164, 204 178 S 156 190, 142 184 S 124 178, 128 172Z"/>
-        </svg>
-
-        <h1>Altitude</h1>
-        <p class="baseline">
-            Connaître l’altitude d’un point en France et en Belgique.
-            <span class="nl">De hoogte van een punt kennen in Frankrijk en België.</span>
-        </p>
-    </header>
-
-    <main>
-        <h2>Choisissez votre pays <span class="nl">/ Kies uw land</span></h2>
-
-        <ul>
-            <li>
-                <a class="pays" href="France/" hreflang="fr">
-                    <span class="drapeau fr" aria-hidden="true"></span>
-                    <span class="texte">
-                        <span class="nom">France</span>
-                        <span class="detail">Français · données IGN (LiDAR HD, RGE ALTI)</span>
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a class="pays" href="Belgique/" hreflang="fr-BE">
-                    <span class="drapeau be" aria-hidden="true"></span>
-                    <span class="texte">
-                        <span class="nom">Belgique</span>
-                        <span class="detail">Français · modèles Copernicus, EU-DEM et IGN</span>
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a class="pays" href="Belgi%C3%AB/" hreflang="nl-BE">
-                    <span class="drapeau be" aria-hidden="true"></span>
-                    <span class="texte">
-                        <span class="nom">België</span>
-                        <span class="detail">Vlaams · modellen Copernicus, EU-DEM en IGN</span>
-                    </span>
-                </a>
-            </li>
-        </ul>
-    </main>
-
-    <footer>
-        <p>Sources : IGN, Copernicus, OpenStreetMap.</p>
-        <p>Bronnen: IGN, Copernicus, OpenStreetMap.</p>
-    </footer>
-
+<div class="tabs">
+  <button id="tab1" class="active">Eén punt</button>
+  <button id="tabN">Meerdere punten</button>
+  <button id="tabP">Profiel</button>
 </div>
+
+<!-- ================= UN POINT ================= -->
+<div id="mode1" class="mode on">
+  <label for="addr">Zoek een adres (optioneel)</label>
+  <input id="addr" placeholder="bv. Grote Markt 1, Brussel" autocomplete="off">
+  <div id="suggestions"></div>
+
+  <label for="coord">Coördinaten (gekopieerd uit Google Maps)</label>
+  <input id="coord" inputmode="text" autocomplete="off" placeholder="50.8467, 4.3525">
+
+  <label for="resource">Bron</label>
+  <select id="resource"></select>
+
+  <button id="go">Hoogte opvragen</button>
+  <button id="loc" class="sec">Mijn huidige locatie gebruiken</button>
+
+  <p>Openen in <a id="gmaps" target="_blank" rel="noopener">Google Maps</a> · <a id="amaps" target="_blank" rel="noopener">Kaarten (Apple)</a></p>
+
+  <div class="send">
+    <button id="toN" class="sec">Toevoegen aan Meerdere punten</button>
+    <button id="toA" class="sec">Instellen als punt A van het profiel</button>
+    <button id="toB" class="sec">Instellen als punt B van het profiel</button>
+  </div>
+  <div id="sendMsg" class="small" role="status"></div>
+
+  <div id="res">
+    <div id="alt"></div>
+    <button id="copyalt" class="sec" style="display:none">Hoogte kopiëren</button>
+    <div id="city"></div>
+    <div id="msg"></div>
+    <div id="precision" class="small"></div>
+    <p class="small">Punt: <span id="pt"></span></p>
+    <p><a id="link" target="_blank" rel="noopener">Verzoek openen</a></p>
+  </div>
+</div>
+
+<!-- ================= PLUSIEURS POINTS ================= -->
+<div id="modeN" class="mode">
+  <label for="coordsN">Eén coördinaat per regel (lat, lon)</label>
+  <textarea id="coordsN" placeholder="50.8467, 4.3525
+50.4674, 4.8720
+50.6326, 5.5797"></textarea>
+  <input type="file" id="fileN" accept=".txt,.csv,.gpx,text/plain,text/csv,application/gpx+xml" hidden>
+  <div class="send">
+    <button id="loadN" class="sec">Bestand met punten laden (.txt, .csv of .gpx)</button>
+    <button id="clearN" class="sec">Lijst wissen</button>
+  </div>
+  <div id="fileMsg" class="small" role="status"></div>
+  <p class="small">Eén regel per punt: «breedtegraad, lengtegraad» (gescheiden door een komma, een puntkomma of een tab). Een CSV-bestand met de kolomkoppen breedtegraad / lengtegraad wordt ook aanvaard, bijvoorbeeld het bestand dat deze pagina exporteert. Een GPX-bestand (track, route of waypoints) wordt ook aanvaard. Een optionele derde waarde op een regel (de hoogte uit het GPX-bestand) wordt vergeleken met de berekende hoogte.</p>
+
+  <label for="resourceN">Bron</label>
+  <select id="resourceN"></select>
+
+  <button id="goN">Hoogtes berekenen</button>
+  <button id="csv" class="sec" style="display:none">Exporteren als CSV</button>
+  <div id="msgN"></div>
+  <div id="tableN"></div>
+</div>
+
+<!-- ================= PROFIL ================= -->
+<div id="modeP" class="mode">
+  <div class="row2">
+    <div>
+      <label for="ptA">Punt A (lat, lon)</label>
+      <input id="ptA" placeholder="50.8467, 4.3525">
+    </div>
+    <div>
+      <label for="ptB">Punt B (lat, lon)</label>
+      <input id="ptB" placeholder="50.8798, 4.4301">
+    </div>
+  </div>
+  <label for="resourceP">Bron</label>
+  <select id="resourceP"></select>
+  <label for="nP">Aantal punten van het profiel</label>
+  <select id="nP"><option value="10">10</option><option value="50">50</option><option value="100" selected>100</option></select>
+  <button id="goP">Profiel tekenen</button>
+  <button id="swapAB" class="sec">A en B omwisselen</button>
+  <div id="msgP"></div>
+  <div id="profResult" style="display:none">
+    <svg id="chart" viewBox="0 0 640 260" role="img" aria-label="Hoogteprofiel"></svg>
+    <div id="profHover" class="small"></div>
+    <div id="profInfo" class="stats"></div>
+    <button id="csvP" class="sec" style="display:none">Profiel exporteren als CSV</button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// --- Sources d'altitude ---
+// Chaque source sait construire son URL, lire la réponse et dit combien de points elle accepte par requête.
+const SOURCES = {
+  openmeteo: {
+    label: "Copernicus GLO-90 via Open-Meteo (≈ 90 m)",
+    precision: "Resolutie ≈ 90 m (Copernicus DEM). Verticale nauwkeurigheid van enkele meters: bruikbaar als orde van grootte.",
+    max: 100, delay: 0,
+    url: pts => "https://api.open-meteo.com/v1/elevation?latitude=" + pts.map(p => p.lat.toFixed(6)).join(",") +
+                "&longitude=" + pts.map(p => p.lon.toFixed(6)).join(","),
+    read: j => j.elevation || []
+  },
+  eudem: {
+    label: "EU-DEM 25 m via OpenTopoData",
+    precision: "Resolutie 25 m (EU-DEM v1.1). Verticale nauwkeurigheid van ongeveer ±7 m.",
+    max: 100, delay: 1100,
+    url: pts => "https://api.opentopodata.org/v1/eudem25m?locations=" +
+                pts.map(p => p.lat.toFixed(6) + "," + p.lon.toFixed(6)).join("|"),
+    read: j => (j.results || []).map(r => r.elevation)
+  },
+  ign: {
+    label: "IGN (wereldwijd) — wisselende nauwkeurigheid buiten Frankrijk",
+    precision: "Wereldwijde IGN-dienst: de nauwkeurigheid hangt af van het gebied en kan laag zijn in België (beter nabij de Franse grens).",
+    max: 50, delay: 0,
+    url: pts => "https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?lon=" + pts.map(p => p.lon.toFixed(7)).join("|") +
+                "&lat=" + pts.map(p => p.lat.toFixed(7)).join("|") + "&resource=ign_rge_alti_wld&zonly=true",
+    read: j => j.elevations || []
+  }
+};
+
+for (const id of ["resource", "resourceN", "resourceP"]) {
+  $(id).innerHTML = Object.entries(SOURCES).map(([k, s]) => '<option value="' + k + '">' + s.label + '</option>').join("");
+}
+
+async function getElevations(pts, key) {
+  const s = SOURCES[key], out = [];
+  for (let i = 0; i < pts.length; i += s.max) {
+    if (i && s.delay) await sleep(s.delay);
+    const r = await fetch(s.url(pts.slice(i, i + s.max)));
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    s.read(j).forEach(z => out.push(typeof z === "number" && z > -9990 ? z : null));
+  }
+  return out;
+}
+
+function inBelgium(p) { return p.lat >= 49.45 && p.lat <= 51.55 && p.lon >= 2.5 && p.lon <= 6.45; }
+
+// --- Onglets ---
+const tabs = { tab1:"mode1", tabN:"modeN", tabP:"modeP" };
+for (const t of Object.keys(tabs)) $(t).addEventListener("click", () => {
+  for (const k of Object.keys(tabs)) {
+    $(k).classList.toggle("active", k === t);
+    $(tabs[k]).classList.toggle("on", k === t);
+  }
+});
+
+function num(s) { return parseFloat(String(s).replace(",", ".")); }
+
+// Accepte « 50.8467, 4.3525 » ou « 50°50'48.1"N 4°21'09.0"E »
+function parse(s) {
+  s = String(s || "").trim();
+  if (!s) return null;
+  if (s.includes("°")) {
+    const re = /(\d+(?:[.,]\d+)?)\s*°\s*(?:(\d+(?:[.,]\d+)?)\s*['’′]\s*)?(?:(\d+(?:[.,]\d+)?)\s*(?:"|”|″|'')\s*)?([NSEWO])/gi;
+    let m, lat = null, lon = null;
+    while ((m = re.exec(s)) !== null) {
+      let v = num(m[1]) + (m[2] ? num(m[2]) / 60 : 0) + (m[3] ? num(m[3]) / 3600 : 0);
+      const h = m[4].toUpperCase();
+      if (h === "S" || h === "W" || h === "O") v = -v;
+      if (h === "N" || h === "S") lat = v; else lon = v;
+    }
+    if (lat === null || lon === null) return null;
+    return { lat, lon };
+  }
+  const n = s.match(/-?\d+(?:[.,]\d+)?/g);
+  if (!n || n.length < 2) return null;
+  return { lat: num(n[0]), lon: num(n[1]) };
+}
+
+// --- Commune du point (Nominatim / OpenStreetMap) ---
+const NOMINATIM = "https://nominatim.openstreetmap.org";
+let cityToken = 0;
+
+async function cityOf(p) {
+  const r = await fetch(NOMINATIM + "/reverse?format=jsonv2&zoom=10&addressdetails=1&accept-language=nl&lat=" +
+                        p.lat.toFixed(7) + "&lon=" + p.lon.toFixed(7));
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const j = await r.json();
+  const a = j.address;
+  if (!a) return null;
+  const nom = a.municipality || a.city || a.town || a.village || a.county || null;
+  if (!nom) return null;
+  return { nom, cp: a.postcode || "", region: a.state || "", pays: a.country_code || "" };
+}
+
+async function showCity(p) {
+  const el = $("city"), tok = ++cityToken;
+  el.textContent = "Gemeente: zoeken…";
+  try {
+    const c = await cityOf(p);
+    if (tok !== cityToken) return;
+    if (!c) { el.textContent = "Gemeente: geen gevonden."; return; }
+    el.textContent = c.nom + (c.cp ? " (" + c.cp + ")" : "") + (c.region ? ", " + c.region : "");
+  } catch (err) {
+    if (tok === cityToken) el.textContent = "Gemeente: niet beschikbaar.";
+  }
+}
+
+let accText = "";
+
+// --- Recherche d'adresse (Nominatim, limitée à la Belgique) ---
+let sugToken = 0;
+$("addr").addEventListener("input", async () => {
+  const q = $("addr").value.trim(), box = $("suggestions"), tok = ++sugToken;
+  if (q.length < 3) { box.innerHTML = ""; return; }
+  try {
+    const r = await fetch(NOMINATIM + "/search?format=jsonv2&countrycodes=be&limit=4&accept-language=nl&q=" + encodeURIComponent(q));
+    const j = await r.json();
+    if (tok !== sugToken) return;
+    box.innerHTML = "";
+    for (const f of j) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = f.display_name;
+      b.addEventListener("click", () => {
+        $("coord").value = parseFloat(f.lat).toFixed(7) + ", " + parseFloat(f.lon).toFixed(7);
+        $("addr").value = f.display_name;
+        updateMapLinksFromInput();
+        box.innerHTML = "";
+      });
+      box.appendChild(b);
+    }
+  } catch (e) { if (tok === sugToken) box.innerHTML = ""; }
+});
+
+// --- Liens Google Maps / Kaarten (Apple), actifs dès l'ouverture ---
+function setMapLinks(lat, lon) {
+  const q = lat.toFixed(7) + "," + lon.toFixed(7);
+  $("gmaps").href = "https://www.google.com/maps?q=" + q;
+  $("amaps").href = "https://maps.apple.com/?q=" + q;
+}
+// Sans coordonnées valides, les liens restent actifs et ouvrent simplement l'application de cartes
+function clearMapLinks() {
+  $("gmaps").href = "https://www.google.com/maps";
+  $("amaps").href = "https://maps.apple.com/";
+}
+function updateMapLinksFromInput() {
+  const p = parse($("coord").value);
+  if (p && !isNaN(p.lat) && !isNaN(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180) setMapLinks(p.lat, p.lon);
+  else clearMapLinks();
+}
+$("coord").addEventListener("input", updateMapLinksFromInput);
+updateMapLinksFromInput();
+
+// --- Mode un point ---
+$("loc").addEventListener("click", () => {
+  const box = $("res"), msg = $("msg");
+  const fail = t => { box.style.display = "block"; $("alt").textContent = ""; $("city").textContent = ""; msg.className = "err"; msg.textContent = t;
+                      $("pt").textContent = ""; $("link").removeAttribute("href"); };
+  if (!navigator.geolocation) { fail("Locatie is niet beschikbaar op dit toestel of in deze browser."); return; }
+  box.style.display = "block"; $("alt").textContent = ""; msg.className = ""; msg.textContent = "Locatie wordt gezocht…";
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      $("coord").value = pos.coords.latitude.toFixed(7) + ", " + pos.coords.longitude.toFixed(7);
+      accText = " (GPS-nauwkeurigheid ± " + Math.round(pos.coords.accuracy) + " m)";
+      $("go").click();
+    },
+    err => fail(err.code === 1
+      ? "Locatie geweigerd. Sta ze toe voor deze site in de instellingen van de browser, of plak de coördinaten handmatig."
+      : "Locatie niet gevonden. Probeer het buiten opnieuw of plak de coördinaten handmatig."),
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+  );
+});
+
+$("go").addEventListener("click", async () => {
+  const box = $("res"), alt = $("alt"), msg = $("msg");
+  box.style.display = "block"; alt.textContent = ""; msg.textContent = ""; msg.className = "";
+  $("copyalt").style.display = "none";
+  cityToken++; $("city").textContent = "";
+  const p = parse($("coord").value);
+  if (!p || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180 || isNaN(p.lat) || isNaN(p.lon)) {
+    msg.className = "err"; msg.textContent = "Coördinaten niet herkend. Voorbeeld: 50.8467, 4.3525";
+    $("pt").textContent = ""; $("link").removeAttribute("href"); clearMapLinks(); return;
+  }
+  const key = $("resource").value, src = SOURCES[key];
+  $("pt").textContent = "lat " + p.lat.toFixed(7) + ", lon " + p.lon.toFixed(7) + accText;
+  accText = "";
+  $("link").href = src.url([p]);
+  setMapLinks(p.lat, p.lon);
+  $("precision").textContent = src.precision + (inBelgium(p) ? "" : " ⚠ Dit punt lijkt buiten België te liggen.");
+  showCity(p);
+  msg.textContent = "Hoogtedienst wordt geraadpleegd…";
+  try {
+    const z = (await getElevations([p], key))[0];
+    if (typeof z === "number") {
+      alt.textContent = z.toFixed(1) + " m";
+      $("copyalt").style.display = "block";
+      msg.textContent = "";
+    } else {
+      msg.className = "err";
+      msg.textContent = "Geen hoogte voor dit punt (buiten het bereik van deze bron). Probeer een andere bron.";
+    }
+  } catch (e) {
+    msg.className = "err";
+    msg.textContent = "Rechtstreeks lezen is niet mogelijk. Tik op «Verzoek openen» om het ruwe antwoord te zien, of probeer een andere bron.";
+  }
+});
+
+$("copyalt").addEventListener("click", () => navigator.clipboard.writeText($("alt").textContent.replace(" m", "").trim()));
+
+// --- Mode plusieurs points ---
+let lastMulti = [];
+
+const ELETXT = { gpx: "Hoogte GPX", diff: "Verschil", summary: (mean, abs, n) => "Over " + n + (n > 1 ? " punten" : " punt") + " met GPX-hoogte: gemiddeld verschil " + sg(mean) + ", gemiddeld absoluut verschil " + abs.toFixed(1) + " m (GPX − bron)." };
+const sg = d => (d > 0 ? "+" : d < 0 ? "−" : "") + Math.abs(d).toFixed(1) + " m";
+// Une ligne peut porter une 3e valeur : l'altitude relevée par l'appareil (fichier GPX), comparée à l'altitude calculée
+function lineEle(l) {
+  if (l.includes("°")) return null;
+  const n = l.match(/-?\d+(?:[.,]\d+)?/g);
+  return n && n.length >= 3 ? num(n[2]) : null;
+}
+const hasEle = () => lastMulti.some(p => p.ele != null && !isNaN(p.ele));
+const diffOf = p => (p.ele != null && !isNaN(p.ele) && p.z != null && p.z > -99990) ? p.ele - p.z : null;
+const eleHead = () => hasEle() ? "<th>" + ELETXT.gpx + "</th><th>" + ELETXT.diff + "</th>" : "";
+function eleCells(p) {
+  if (!hasEle()) return "";
+  const d = diffOf(p);
+  return "<td class='r'>" + (p.ele != null && !isNaN(p.ele) ? p.ele.toFixed(1) + " m" : "—") + "</td><td class='r'>" + (d !== null ? sg(d) : "—") + "</td>";
+}
+function eleSummary() {
+  if (!hasEle()) return "";
+  const ds = lastMulti.map(diffOf).filter(d => d !== null);
+  if (!ds.length) return "";
+  const mean = ds.reduce((s, d) => s + d, 0) / ds.length, abs = ds.reduce((s, d) => s + Math.abs(d), 0) / ds.length;
+  return "<p class='small'>" + ELETXT.summary(mean, abs, ds.length) + "</p>";
+}
+
+$("goN").addEventListener("click", async () => {
+  const msg = $("msgN");
+  msg.textContent = ""; msg.className = "";
+  const lines = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
+  const pts = lines.map(parse);
+  const eles = lines.map(lineEle);
+  if (!pts.length || pts.some(p => !p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180)) {
+    msg.className = "err"; msg.textContent = "Minstens één regel wordt niet herkend. Eén coördinaat per regel, bv. 50.8467, 4.3525";
+    return;
+  }
+  msg.textContent = "Hoogtedienst wordt geraadpleegd (" + pts.length + " punten)…";
+  try {
+    const zs = await getElevations(pts, $("resourceN").value);
+    lastMulti = pts.map((p, i) => ({ ...p, z: zs[i], ligne: i + 1, ele: eles[i] }));
+    msg.textContent = "";
+    $("csv").style.display = "block";
+    renderMulti();
+  } catch (e) {
+    msg.className = "err";
+    msg.textContent = "Fout bij het raadplegen van de hoogtedienst (netwerk of quotum). Probeer een andere bron.";
+  }
+});
+
+// Les communes sont cherchées une par une (Nominatim limite à ~1 requête/seconde), et seulement jusqu'à 20 points.
+let renderToken = 0;
+async function renderMulti() {
+  const tok = ++renderToken, tbl = $("tableN");
+  const withCity = lastMulti.length <= 20;
+  let html = "<table><tr><th>#</th><th>Breedtegraad</th><th>Lengtegraad</th><th>Hoogte</th>" + eleHead() + (withCity ? "<th>Gemeente</th>" : "") + "</tr>";
+  for (const p of lastMulti) {
+    html += "<tr><td>" + p.ligne + "</td><td>" + p.lat.toFixed(6) + "</td><td>" + p.lon.toFixed(6) + "</td><td class='r'>" +
+            (p.z != null ? p.z.toFixed(1) + " m" : "—") + "</td>" + eleCells(p) + (withCity ? "<td id='com" + p.ligne + "'>…</td>" : "") + "</tr>";
+  }
+  html += "</table>";
+  html += eleSummary();
+  if (!withCity) html += "<p class='small'>Meer dan 20 punten: de kolom Gemeente wordt weggelaten.</p>";
+  tbl.innerHTML = html;
+  if (!withCity) return;
+  for (const p of lastMulti) {
+    if (tok !== renderToken) return;
+    let com = "";
+    try { const c = await cityOf(p); com = c ? c.nom : ""; } catch (e) { com = "niet beschikbaar"; }
+    const cell = $("com" + p.ligne);
+    if (cell) cell.textContent = com;
+    await sleep(1100);
+  }
+}
+
+$("csv").addEventListener("click", () => {
+  const rows = [["regel", "breedtegraad", "lengtegraad", "hoogte_m"]];
+  for (const p of lastMulti) rows.push([p.ligne, p.lat, p.lon, p.z != null ? p.z.toFixed(1) : ""]);
+  if (hasEle()) {
+    rows[0].push("hoogte_gps_m", "verschil_m");
+    lastMulti.forEach((p, i) => { const d = diffOf(p); rows[i + 1].push(p.ele != null && !isNaN(p.ele) ? p.ele.toFixed(2) : "", d !== null ? d.toFixed(2) : ""); });
+  }
+  downloadCSV(rows, "hoogtes-belgie.csv");
+});
+
+function downloadCSV(rows, name) {
+  const csv = rows.map(r => r.join(";")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
+  a.download = name;
+  a.click();
+}
+
+// --- Charger un fichier de points (.txt ou .csv) dans « Plusieurs points » ---
+(function () {
+  const MAX = 1000;
+  const T = { thin: (n, m) => "Track teruggebracht van " + n + " naar " + m + " punten (regelmatige bemonstering).", none: "Geen punten herkend in dit bestand.", err: "Het bestand kon niet gelezen worden.", cap: "Bestand beperkt tot de eerste 1000 punten.", added: (n, s) => n + (n > 1 ? " punten toegevoegd" : " punt toegevoegd") + (s ? " (" + s + (s > 1 ? " regels genegeerd" : " regel genegeerd") + ")" : "") + "." };
+  const say = (t, err) => { const m = $("fileMsg"); m.textContent = t; m.className = "small" + (err ? " err" : ""); };
+  const fmtPt = p => p.lat.toFixed(7) + ", " + p.lon.toFixed(7) + (p.ele != null && !isNaN(p.ele) ? ", " + Math.round(p.ele * 100) / 100 : "");
+  const valid = p => p && !isNaN(p.lat) && !isNaN(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180;
+
+  function parseGpx(text) {
+    const doc = new DOMParser().parseFromString(text, "application/xml");
+    if (doc.getElementsByTagName("parsererror").length) return null;
+    let nodes = doc.getElementsByTagName("trkpt");
+    if (!nodes.length) nodes = doc.getElementsByTagName("rtept");
+    if (!nodes.length) nodes = doc.getElementsByTagName("wpt");
+    const pts = []; let skipped = 0;
+    for (const n of nodes) {
+      const e = n.getElementsByTagName("ele")[0];
+      const p = { lat: num(n.getAttribute("lat")), lon: num(n.getAttribute("lon")), ele: e ? num(e.textContent) : NaN };
+      if (valid(p)) pts.push(fmtPt(p)); else skipped++;
+    }
+    return { pts, skipped };
+  }
+
+  function parsePointsFile(text) {
+    const lines = text.replace(/^\ufeff/, "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const pts = []; let skipped = 0, latI = -1, lonI = -1, eleI = -1, delim = ",", start = 0;
+    if (lines.length && /[a-z]/i.test(lines[0]) && !lines[0].includes("°")) {   // première ligne = en-têtes
+      const h = lines[0];
+      delim = h.includes(";") ? ";" : h.includes("\t") ? "\t" : ",";
+      const cols = h.split(delim).map(c => c.trim().toLowerCase());
+      latI = cols.findIndex(c => /^(lat|latitude|breedtegraad)/.test(c));
+      lonI = cols.findIndex(c => /^(lon|lng|long|longitude|lengtegraad)/.test(c));
+      eleI = cols.findIndex(c => /^(ele|elevation|altitude_gpx|hoogte_gps|alt_gps)/.test(c));
+      start = 1;
+    }
+    for (let i = start; i < lines.length; i++) {
+      const line = lines[i]; let p = null;
+      if (latI >= 0 && lonI >= 0) {
+        const f = line.split(delim);
+        p = { lat: num(f[latI]), lon: num(f[lonI]), ele: eleI >= 0 ? num(f[eleI]) : NaN };
+      } else if (line.includes(";") || line.includes("\t")) {
+        const n = line.split(/[;\t]/).map(num).filter(v => !isNaN(v));
+        p = n.length >= 2 ? { lat: n[0], lon: n[1] } : null;
+      } else {
+        p = parse(line);
+      }
+      if (valid(p)) pts.push(fmtPt(p)); else skipped++;
+    }
+    return { pts, skipped };
+  }
+
+  $("clearN").addEventListener("click", () => {
+    $("coordsN").value = ""; $("fileMsg").textContent = "";
+    $("tableN").innerHTML = ""; $("msgN").textContent = ""; $("csv").style.display = "none";
+    lastMulti = [];
+    if (typeof renderToken !== "undefined") renderToken++;
+  });
+  $("loadN").addEventListener("click", () => $("fileN").click());
+  $("fileN").addEventListener("change", () => {
+    const file = $("fileN").files && $("fileN").files[0];
+    if (!file) return;
+    const rd = new FileReader();
+    rd.onerror = () => say(T.err, true);
+    rd.onload = () => {
+      const text = String(rd.result || "");
+      const gpx = /<gpx[\s>]/i.test(text);
+      const r = gpx ? parseGpx(text) : parsePointsFile(text);
+      if (!r || !r.pts.length) { say(T.none, true); return; }
+      let pts = r.pts, note = "";
+      const cur = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
+      const room = Math.max(0, MAX - cur.length);
+      if (pts.length > room) {
+        if (gpx && room > 1) {   // une trace GPX est réduite régulièrement pour garder sa forme complète
+          const n = pts.length;
+          pts = Array.from({ length: room }, (_, i) => pts[Math.round(i * (n - 1) / (room - 1))]);
+          note = " " + T.thin(n, room);
+        } else { pts = pts.slice(0, room); note = " " + T.cap; }
+      }
+      $("coordsN").value = cur.concat(pts).join("\n");
+      say(T.added(pts.length, r.skipped) + note);
+    };
+    rd.readAsText(file);
+    $("fileN").value = "";
+  });
+})();
+
+// --- Envoyer le point courant vers « Plusieurs points » ou « Profil » ---
+(function () {
+  const T = { bad: "Coördinaten niet herkend. Geef eerst een punt in.", dup: "Dit punt staat al in «Meerdere punten».", added: n => "Punt toegevoegd aan «Meerdere punten» (" + n + (n > 1 ? " punten" : " punt") + " in totaal).", seta: "Punt A van het profiel ingesteld.", setb: "Punt B van het profiel ingesteld." };
+  const say = (t, err) => { const m = $("sendMsg"); m.textContent = t; m.className = "small" + (err ? " err" : ""); };
+  const current = () => {
+    const p = parse($("coord").value);
+    if (!p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180) { say(T.bad, true); return null; }
+    return p.lat.toFixed(7) + ", " + p.lon.toFixed(7);
+  };
+  $("toN").addEventListener("click", () => {
+    const line = current(); if (!line) return;
+    const lines = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
+    if (lines.includes(line)) { say(T.dup); return; }
+    lines.push(line);
+    $("coordsN").value = lines.join("\n");
+    say(T.added(lines.length));
+  });
+  $("toA").addEventListener("click", () => { const line = current(); if (line) { $("ptA").value = line; say(T.seta); } });
+  $("toB").addEventListener("click", () => { const line = current(); if (line) { $("ptB").value = line; say(T.setb); } });
+  $("coord").addEventListener("input", () => { $("sendMsg").textContent = ""; });
+})();
+
+// --- Mode profil ---
+let lastProfile = [];
+
+const PROFTXT = {
+  hint: "Tik of beweeg over de curve om de hoogte af te lezen.",
+  hoverD: "Afstand", hoverZ: "Hoogte", noPoint: "geen gegevens",
+  badCoords: "Coördinaten A of B niet herkend.",
+  samePoint: "Punt A en B zijn identiek.",
+  computing: n => "Profiel wordt berekend (" + n + " punten)…",
+  noData: "Geen gegevens voor dit traject (buiten het bereik).",
+  error: "Fout bij het raadplegen van de hoogtedienst (netwerk of quotum).",
+  stats: { dist: "Afstand", pente: "Gemiddelde helling", start: "Start", end: "Aankomst", min: "Minimum", max: "Maximum", up: "Totale stijging", down: "Totale daling" }
+};
+
+function haversine(a, b) {
+  const R = 6371008.8, rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad, dLon = (b.lon - a.lon) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function fmtDist(m) { return m < 1000 ? Math.round(m) + " m" : parseFloat((m / 1000).toFixed(m < 10000 ? 2 : 1)) + " km"; }
+
+function niceStep(range, target) {
+  const raw = range / target, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+}
+
+async function profElevations(pts, resource) { return getElevations(pts, resource); }
+
+$("swapAB").addEventListener("click", () => {
+  const a = $("ptA").value; $("ptA").value = $("ptB").value; $("ptB").value = a;
+});
+
+$("goP").addEventListener("click", async () => {
+  const msg = $("msgP");
+  msg.textContent = ""; msg.className = "";
+  $("csvP").style.display = "none";
+  const A = parse($("ptA").value), B = parse($("ptB").value);
+  const bad = p => !p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180;
+  if (bad(A) || bad(B)) { msg.className = "err"; msg.textContent = PROFTXT.badCoords; return; }
+  const total = haversine(A, B);
+  if (total < 1) { msg.className = "err"; msg.textContent = PROFTXT.samePoint; return; }
+  const N = parseInt($("nP").value, 10) || 100, pts = [];
+  msg.textContent = PROFTXT.computing(N);
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    pts.push({ lat: A.lat + (B.lat - A.lat) * t, lon: A.lon + (B.lon - A.lon) * t });
+  }
+  try {
+    const z = await profElevations(pts, $("resourceP").value);
+    if (!z.length || z.every(v => v === null)) { msg.className = "err"; msg.textContent = PROFTXT.noData; return; }
+    lastProfile = z.map((zi, i) => ({ rang: i + 1, d: total * i / (N - 1), lat: pts[i].lat, lon: pts[i].lon, z: zi }));
+    $("profResult").style.display = "block";
+    drawProfile(z, total, pts);
+    const valid = z.filter(v => v !== null);
+    const first = z.find(v => v !== null), last = [...z].reverse().find(v => v !== null);
+    const dPlus = valid.reduce((s, v, i) => i && valid[i - 1] < v ? s + (v - valid[i - 1]) : s, 0);
+    const dMoins = valid.reduce((s, v, i) => i && valid[i - 1] > v ? s + (valid[i - 1] - v) : s, 0);
+    const pente = (last - first) / total * 100;
+    const T = PROFTXT.stats;
+    const items = [
+      [T.dist, fmtDist(total)], [T.pente, (pente.toFixed(1) === "-0.0" ? "0.0" : (pente > 0 ? "+" : "") + pente.toFixed(1)) + " %"],
+      [T.start, first.toFixed(1) + " m"], [T.end, last.toFixed(1) + " m"],
+      [T.min, Math.min(...valid).toFixed(1) + " m"], [T.max, Math.max(...valid).toFixed(1) + " m"],
+      [T.up, "+ " + Math.round(dPlus) + " m"], [T.down, "− " + Math.round(dMoins) + " m"]
+    ];
+    $("profInfo").innerHTML = items.map(([k, v]) => "<div><span>" + k + "</span><b>" + v + "</b></div>").join("");
+    msg.textContent = "";
+    $("csvP").style.display = "block";
+  } catch (e) {
+    msg.className = "err"; msg.textContent = PROFTXT.error;
+  }
+});
+
+function drawProfile(z, total, pts) {
+  const W = 640, H = 260, L = 48, R = 14, T = 12, B = 30;
+  const valid = z.filter(v => v !== null);
+  let zmin = Math.min(...valid), zmax = Math.max(...valid);
+  if (zmax - zmin < 4) { const c = (zmax + zmin) / 2; zmin = c - 2; zmax = c + 2; }
+  const step = niceStep(zmax - zmin, 4);
+  const lo = Math.floor(zmin / step) * step, hi = Math.ceil(zmax / step) * step;
+  const PW = W - L - R, PH = H - T - B;
+  const X = i => L + (i / (z.length - 1)) * PW;
+  const Y = v => T + (1 - (v - lo) / (hi - lo)) * PH;
+  const f = n => n.toFixed(1);
+
+  let g = "";
+  for (let v = lo; v <= hi + step / 1000; v += step) {
+    const y = Y(v);
+    g += '<line class="pgrid" x1="' + L + '" x2="' + (W - R) + '" y1="' + f(y) + '" y2="' + f(y) + '"/>' +
+         '<text class="plab" x="' + (L - 6) + '" y="' + f(y + 4) + '" text-anchor="end">' + (Math.round(v * 10) / 10) + '</text>';
+  }
+  const dstep = niceStep(total, 5);
+  for (let d = 0; d <= total + dstep / 1000; d += dstep) {
+    const x = L + (d / total) * PW;
+    g += '<line class="ptick" x1="' + f(x) + '" x2="' + f(x) + '" y1="' + (H - B) + '" y2="' + (H - B + 4) + '"/>' +
+         '<text class="plab" x="' + f(x) + '" y="' + (H - B + 17) + '" text-anchor="' + (x > W - R - 20 ? "end" : "middle") + '">' + fmtDist(d) + '</text>';
+  }
+
+  // Courbe et surface, interrompues là où il n'y a pas de données
+  let line = "", area = "", run = [];
+  const flush = () => {
+    if (run.length > 1) {
+      const p = run.map(([x, y]) => f(x) + "," + f(y)).join("L");
+      line += "M" + p;
+      area += "M" + f(run[0][0]) + "," + (H - B) + "L" + p + "L" + f(run[run.length - 1][0]) + "," + (H - B) + "Z";
+    }
+    run = [];
+  };
+  z.forEach((v, i) => { if (v === null) flush(); else run.push([X(i), Y(v)]); });
+  flush();
+
+  const svg = $("chart");
+  svg.innerHTML = g + '<path class="parea" d="' + area + '"/><path class="pline" d="' + line + '"/>' +
+    '<g id="pcur" style="display:none"><line class="pcl" y1="' + T + '" y2="' + (H - B) + '"/><circle class="pdot" r="5"/></g>' +
+    '<rect id="pover" x="' + L + '" y="' + T + '" width="' + PW + '" height="' + PH + '" fill="transparent" style="touch-action:pan-y"/>';
+
+  const hover = $("profHover"), cur = $("pcur"), dot = cur.querySelector("circle"), cl = cur.querySelector("line");
+  hover.textContent = PROFTXT.hint;
+  const at = clientX => {
+    const r = svg.getBoundingClientRect();
+    const vx = (clientX - r.left) / r.width * W;
+    const i = Math.max(0, Math.min(z.length - 1, Math.round((vx - L) / PW * (z.length - 1))));
+    const x = X(i);
+    cl.setAttribute("x1", f(x)); cl.setAttribute("x2", f(x));
+    if (z[i] === null) {
+      dot.style.display = "none";
+      hover.textContent = PROFTXT.hoverD + " " + fmtDist(total * i / (z.length - 1)) + " · " + PROFTXT.noPoint;
+    } else {
+      dot.style.display = ""; dot.setAttribute("cx", f(x)); dot.setAttribute("cy", f(Y(z[i])));
+      hover.textContent = PROFTXT.hoverD + " " + fmtDist(total * i / (z.length - 1)) + " · " + PROFTXT.hoverZ + " " + z[i].toFixed(1) + " m · " +
+        pts[i].lat.toFixed(5) + ", " + pts[i].lon.toFixed(5);
+    }
+    cur.style.display = "";
+  };
+  const over = $("pover");
+  over.addEventListener("pointermove", e => at(e.clientX));
+  over.addEventListener("pointerdown", e => at(e.clientX));
+  over.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") { cur.style.display = "none"; hover.textContent = PROFTXT.hint; } });
+}
+
+$("csvP").addEventListener("click", () => {
+  const rows = [["volgnummer", "afstand_m", "breedtegraad", "lengtegraad", "hoogte_m"]];
+  for (const p of lastProfile) rows.push([p.rang, Math.round(p.d), p.lat.toFixed(7), p.lon.toFixed(7), p.z === null ? "" : p.z.toFixed(2)]);
+  downloadCSV(rows, "hoogteprofiel.csv");
+});
+</script>
 </body>
 </html>
