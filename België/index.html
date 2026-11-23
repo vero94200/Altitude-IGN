@@ -58,6 +58,11 @@
   .send button { margin-top:0; }
   #sendMsg { min-height:1.3em; margin-top:6px; }
   #tableN { overflow-x:auto; }
+  .lg { display:inline-block; width:20px; border-top:2px solid var(--prof); vertical-align:middle; margin-right:6px; }
+  .lg2 { border-top:2px dashed var(--fg); opacity:.75; }
+  .pgps { fill:none; stroke:var(--fg); stroke-width:1.5; stroke-dasharray:5 4; opacity:.75; stroke-linejoin:round; }
+  #profLegend { margin-top:6px; }
+  #profGps { margin-top:4px; }
 </style>
 </head>
 <body>
@@ -75,7 +80,7 @@
   <input id="addr" placeholder="bv. Grote Markt 1, Brussel" autocomplete="off">
   <div id="suggestions"></div>
 
-  <label for="coord">Coördinaten (gekopieerd uit Google Maps)</label>
+  <label for="coord">Coördinaten (gekopieerd uit Google Maps) — WGS 84, EPSG:4326</label>
   <input id="coord" inputmode="text" autocomplete="off" placeholder="50.8467, 4.3525">
 
   <label for="resource">Bron</label>
@@ -106,17 +111,17 @@
 
 <!-- ================= PLUSIEURS POINTS ================= -->
 <div id="modeN" class="mode">
-  <label for="coordsN">Eén coördinaat per regel (lat, lon)</label>
+  <label for="coordsN">Eén coördinaat per regel (lat, lon) — WGS 84, EPSG:4326</label>
   <textarea id="coordsN" placeholder="50.8467, 4.3525
 50.4674, 4.8720
 50.6326, 5.5797"></textarea>
-  <input type="file" id="fileN" accept=".txt,.csv,.gpx,text/plain,text/csv,application/gpx+xml" hidden>
+  <input type="file" id="fileN" accept=".txt,.csv,.gpx,.kml,text/plain,text/csv,application/gpx+xml,application/vnd.google-earth.kml+xml" hidden>
   <div class="send">
-    <button id="loadN" class="sec">Bestand met punten laden (.txt, .csv of .gpx)</button>
+    <button id="loadN" class="sec">Bestand met punten laden (.txt, .csv, .gpx of .kml)</button>
     <button id="clearN" class="sec">Lijst wissen</button>
   </div>
   <div id="fileMsg" class="small" role="status"></div>
-  <p class="small">Eén regel per punt: «breedtegraad, lengtegraad» (gescheiden door een komma, een puntkomma of een tab). Een CSV-bestand met de kolomkoppen breedtegraad / lengtegraad wordt ook aanvaard, bijvoorbeeld het bestand dat deze pagina exporteert. Een GPX-bestand (track, route of waypoints) wordt ook aanvaard. Een optionele derde waarde op een regel (de hoogte uit het GPX-bestand) wordt vergeleken met de berekende hoogte.</p>
+  <p class="small">Eén regel per punt: «breedtegraad, lengtegraad» (gescheiden door een komma, een puntkomma of een tab). Een CSV-bestand met de kolomkoppen breedtegraad / lengtegraad wordt ook aanvaard, bijvoorbeeld het bestand dat deze pagina exporteert. Een GPX-bestand (track, route of waypoints) wordt ook aanvaard. Een KML-bestand met een polylijn wordt punt per punt gelezen. Een optionele derde waarde op een regel (de hoogte uit het GPX-bestand) wordt vergeleken met de berekende hoogte.</p>
 
   <label for="resourceN">Bron</label>
   <select id="resourceN"></select>
@@ -131,11 +136,11 @@
 <div id="modeP" class="mode">
   <div class="row2">
     <div>
-      <label for="ptA">Punt A (lat, lon)</label>
+      <label for="ptA">Punt A (lat, lon – EPSG:4326)</label>
       <input id="ptA" placeholder="50.8467, 4.3525">
     </div>
     <div>
-      <label for="ptB">Punt B (lat, lon)</label>
+      <label for="ptB">Punt B (lat, lon – EPSG:4326)</label>
       <input id="ptB" placeholder="50.8798, 4.4301">
     </div>
   </div>
@@ -145,10 +150,14 @@
   <select id="nP"><option value="10">10</option><option value="50">50</option><option value="100" selected>100</option></select>
   <button id="goP">Profiel tekenen</button>
   <button id="swapAB" class="sec">A en B omwisselen</button>
+  <input type="file" id="fileP" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml" hidden>
+  <button id="loadP" class="sec">Profiel van een GPX- of KML-track tekenen</button>
   <div id="msgP"></div>
   <div id="profResult" style="display:none">
     <svg id="chart" viewBox="0 0 640 260" role="img" aria-label="Hoogteprofiel"></svg>
     <div id="profHover" class="small"></div>
+    <div id="profLegend" class="small"></div>
+    <div id="profGps" class="small"></div>
     <div id="profInfo" class="stats"></div>
     <button id="csvP" class="sec" style="display:none">Profiel exporteren als CSV</button>
   </div>
@@ -371,6 +380,32 @@ $("copyalt").addEventListener("click", () => navigator.clipboard.writeText($("al
 // --- Mode plusieurs points ---
 let lastMulti = [];
 
+// Sommets d'une polyligne KML (LineString, ou gx:Track). Attention : KML écrit « longitude,latitude,altitude ».
+function kmlVertices(text) {
+  const doc = new DOMParser().parseFromString(text, "application/xml");
+  if (doc.getElementsByTagName("parsererror").length) return null;
+  let tokens = [];
+  for (const n of doc.getElementsByTagName("LineString")) {
+    const c = n.getElementsByTagName("coordinates")[0];
+    if (c) tokens = tokens.concat(c.textContent.trim().split(/\s+/));
+  }
+  if (!tokens.length) for (const n of doc.getElementsByTagName("gx:coord")) tokens.push(n.textContent.trim().split(/\s+/).join(","));
+  if (!tokens.length) for (const n of doc.getElementsByTagName("Point")) {
+    const c = n.getElementsByTagName("coordinates")[0];
+    if (c) tokens.push(c.textContent.trim());
+  }
+  const pts = []; let skipped = 0;
+  for (const t of tokens) {
+    if (!t) continue;
+    const f = t.split(",");
+    const p = { lon: parseFloat(f[0]), lat: parseFloat(f[1]), ele: f.length > 2 ? parseFloat(f[2]) : NaN };
+    if (isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180) skipped++; else pts.push(p);
+  }
+  // Une altitude toujours à 0 est un simple remplissage (tracé « collé au sol »), pas une mesure
+  if (pts.every(p => isNaN(p.ele) || p.ele === 0)) pts.forEach(p => { p.ele = NaN; });
+  return { pts, skipped };
+}
+
 const ELETXT = { gpx: "Hoogte GPX", diff: "Verschil", summary: (mean, abs, n) => "Over " + n + (n > 1 ? " punten" : " punt") + " met GPX-hoogte: gemiddeld verschil " + sg(mean) + ", gemiddeld absoluut verschil " + abs.toFixed(1) + " m (GPX − bron)." };
 const sg = d => (d > 0 ? "+" : d < 0 ? "−" : "") + Math.abs(d).toFixed(1) + " m";
 // Une ligne peut porter une 3e valeur : l'altitude relevée par l'appareil (fichier GPX), comparée à l'altitude calculée
@@ -429,6 +464,7 @@ async function renderMulti() {
             (p.z != null ? p.z.toFixed(1) + " m" : "—") + "</td>" + eleCells(p) + (withCity ? "<td id='com" + p.ligne + "'>…</td>" : "") + "</tr>";
   }
   html += "</table>";
+  html += "<p class='small'>Breedte- en lengtegraad: WGS 84 (EPSG:4326).</p>";
   html += eleSummary();
   if (!withCity) html += "<p class='small'>Meer dan 20 punten: de kolom Gemeente wordt weggelaten.</p>";
   tbl.innerHTML = html;
@@ -468,6 +504,12 @@ function downloadCSV(rows, name) {
   const say = (t, err) => { const m = $("fileMsg"); m.textContent = t; m.className = "small" + (err ? " err" : ""); };
   const fmtPt = p => p.lat.toFixed(7) + ", " + p.lon.toFixed(7) + (p.ele != null && !isNaN(p.ele) ? ", " + Math.round(p.ele * 100) / 100 : "");
   const valid = p => p && !isNaN(p.lat) && !isNaN(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180;
+
+  function parseKml(text) {
+    const v = kmlVertices(text);
+    if (!v) return null;
+    return { pts: v.pts.map(fmtPt), skipped: v.skipped };
+  }
 
   function parseGpx(text) {
     const doc = new DOMParser().parseFromString(text, "application/xml");
@@ -526,14 +568,14 @@ function downloadCSV(rows, name) {
     rd.onerror = () => say(T.err, true);
     rd.onload = () => {
       const text = String(rd.result || "");
-      const gpx = /<gpx[\s>]/i.test(text);
-      const r = gpx ? parseGpx(text) : parsePointsFile(text);
+      const gpx = /<gpx[\s>]/i.test(text), kml = /<kml[\s>]/i.test(text);
+      const r = gpx ? parseGpx(text) : kml ? parseKml(text) : parsePointsFile(text);
       if (!r || !r.pts.length) { say(T.none, true); return; }
       let pts = r.pts, note = "";
       const cur = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
       const room = Math.max(0, MAX - cur.length);
       if (pts.length > room) {
-        if (gpx && room > 1) {   // une trace GPX est réduite régulièrement pour garder sa forme complète
+        if ((gpx || kml) && room > 1) {   // une trace GPX est réduite régulièrement pour garder sa forme complète
           const n = pts.length;
           pts = Array.from({ length: room }, (_, i) => pts[Math.round(i * (n - 1) / (room - 1))]);
           note = " " + T.thin(n, room);
@@ -575,6 +617,9 @@ let lastProfile = [];
 const PROFTXT = {
   hint: "Tik of beweeg over de curve om de hoogte af te lezen.",
   hoverD: "Afstand", hoverZ: "Hoogte", noPoint: "geen gegevens",
+  noTrack: "Geen track gevonden in dit bestand (GPX: track of route; KML: polylijn; minstens 2 punten).",
+  fileErr: "Het bestand kon niet gelezen worden.",
+  srcLabel: "Gekozen bron", gpsLabel: "GPX-hoogte (toestel)",
   badCoords: "Coördinaten A of B niet herkend.",
   samePoint: "Punt A en B zijn identiek.",
   computing: n => "Profiel wordt berekend (" + n + " punten)…",
@@ -603,6 +648,79 @@ $("swapAB").addEventListener("click", () => {
   const a = $("ptA").value; $("ptA").value = $("ptB").value; $("ptB").value = a;
 });
 
+function readTrack(text) {
+  if (/<kml[\s>]/i.test(text)) { const v = kmlVertices(text); return v ? v.pts : null; }
+  const doc = new DOMParser().parseFromString(text, "application/xml");
+  if (doc.getElementsByTagName("parsererror").length) return null;
+  let nodes = doc.getElementsByTagName("trkpt");
+  if (!nodes.length) nodes = doc.getElementsByTagName("rtept");
+  const track = [];
+  for (const n of nodes) {
+    const e = n.getElementsByTagName("ele")[0];
+    const p = { lat: num(n.getAttribute("lat")), lon: num(n.getAttribute("lon")), ele: e ? num(e.textContent) : NaN };
+    if (!isNaN(p.lat) && !isNaN(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180) track.push(p);
+  }
+  return track;
+}
+
+// Rééchantillonne la trace en N points régulièrement espacés le long de son parcours (altitude GPX interpolée)
+function resampleTrack(track, N) {
+  const cum = [0];
+  for (let i = 1; i < track.length; i++) cum.push(cum[i - 1] + haversine(track[i - 1], track[i]));
+  const total = cum[cum.length - 1];
+  if (!(total >= 1)) return null;
+  const pts = [], gps = [];
+  let j = 1;
+  for (let k = 0; k < N; k++) {
+    const d = total * k / (N - 1);
+    while (j < track.length - 1 && cum[j] < d) j++;
+    const a = track[j - 1], b = track[j], seg = cum[j] - cum[j - 1];
+    const t = seg > 0 ? Math.min(1, Math.max(0, (d - cum[j - 1]) / seg)) : 0;
+    pts.push({ lat: a.lat + (b.lat - a.lat) * t, lon: a.lon + (b.lon - a.lon) * t });
+    const ok = !isNaN(a.ele) && !isNaN(b.ele);
+    gps.push(ok ? a.ele + (b.ele - a.ele) * t : null);
+  }
+  return { pts, gps, total };
+}
+
+async function runProfile(pts, total, gps) {
+  const msg = $("msgP");
+  try {
+    const z = await profElevations(pts, $("resourceP").value);
+    if (!z.length || z.every(v => v === null)) { msg.className = "err"; msg.textContent = PROFTXT.noData; return; }
+    const N = pts.length;
+    lastProfile = z.map((zi, i) => ({ rang: i + 1, d: total * i / (N - 1), lat: pts[i].lat, lon: pts[i].lon, z: zi, gps: gps ? gps[i] : null }));
+    $("profResult").style.display = "block";
+    drawProfile(z, total, pts, gps);
+    const valid = z.filter(v => v !== null);
+    const first = z.find(v => v !== null), last = [...z].reverse().find(v => v !== null);
+    const dPlus = valid.reduce((s, v, i) => i && valid[i - 1] < v ? s + (v - valid[i - 1]) : s, 0);
+    const dMoins = valid.reduce((s, v, i) => i && valid[i - 1] > v ? s + (valid[i - 1] - v) : s, 0);
+    const pente = (last - first) / total * 100;
+    const T = PROFTXT.stats;
+    const items = [
+      [T.dist, fmtDist(total)], [T.pente, (pente.toFixed(1) === "-0.0" ? "0.0" : (pente > 0 ? "+" : "") + pente.toFixed(1)) + " %"],
+      [T.start, first.toFixed(1) + " m"], [T.end, last.toFixed(1) + " m"],
+      [T.min, Math.min(...valid).toFixed(1) + " m"], [T.max, Math.max(...valid).toFixed(1) + " m"],
+      [T.up, "+ " + Math.round(dPlus) + " m"], [T.down, "− " + Math.round(dMoins) + " m"]
+    ];
+    $("profInfo").innerHTML = items.map(([k, v]) => "<div><span>" + k + "</span><b>" + v + "</b></div>").join("");
+    // Légende et écart moyen entre l'altitude du GPS (fichier GPX) et celle de la source
+    if (gps) {
+      $("profLegend").innerHTML = '<span class="lg"></span>' + PROFTXT.srcLabel + ' &nbsp; <span class="lg lg2"></span>' + PROFTXT.gpsLabel;
+      const ds = z.map((v, i) => v !== null && gps[i] !== null ? gps[i] - v : null).filter(d => d !== null);
+      if (ds.length) {
+        const mean = ds.reduce((s, d) => s + d, 0) / ds.length, abs = ds.reduce((s, d) => s + Math.abs(d), 0) / ds.length;
+        $("profGps").textContent = ELETXT.summary(mean, abs, ds.length);
+      } else $("profGps").textContent = "";
+    } else { $("profLegend").innerHTML = ""; $("profGps").textContent = ""; }
+    msg.className = ""; msg.textContent = "";
+    $("csvP").style.display = "block";
+  } catch (e) {
+    msg.className = "err"; msg.textContent = PROFTXT.error;
+  }
+}
+
 $("goP").addEventListener("click", async () => {
   const msg = $("msgP");
   msg.textContent = ""; msg.className = "";
@@ -618,36 +736,38 @@ $("goP").addEventListener("click", async () => {
     const t = i / (N - 1);
     pts.push({ lat: A.lat + (B.lat - A.lat) * t, lon: A.lon + (B.lon - A.lon) * t });
   }
-  try {
-    const z = await profElevations(pts, $("resourceP").value);
-    if (!z.length || z.every(v => v === null)) { msg.className = "err"; msg.textContent = PROFTXT.noData; return; }
-    lastProfile = z.map((zi, i) => ({ rang: i + 1, d: total * i / (N - 1), lat: pts[i].lat, lon: pts[i].lon, z: zi }));
-    $("profResult").style.display = "block";
-    drawProfile(z, total, pts);
-    const valid = z.filter(v => v !== null);
-    const first = z.find(v => v !== null), last = [...z].reverse().find(v => v !== null);
-    const dPlus = valid.reduce((s, v, i) => i && valid[i - 1] < v ? s + (v - valid[i - 1]) : s, 0);
-    const dMoins = valid.reduce((s, v, i) => i && valid[i - 1] > v ? s + (valid[i - 1] - v) : s, 0);
-    const pente = (last - first) / total * 100;
-    const T = PROFTXT.stats;
-    const items = [
-      [T.dist, fmtDist(total)], [T.pente, (pente.toFixed(1) === "-0.0" ? "0.0" : (pente > 0 ? "+" : "") + pente.toFixed(1)) + " %"],
-      [T.start, first.toFixed(1) + " m"], [T.end, last.toFixed(1) + " m"],
-      [T.min, Math.min(...valid).toFixed(1) + " m"], [T.max, Math.max(...valid).toFixed(1) + " m"],
-      [T.up, "+ " + Math.round(dPlus) + " m"], [T.down, "− " + Math.round(dMoins) + " m"]
-    ];
-    $("profInfo").innerHTML = items.map(([k, v]) => "<div><span>" + k + "</span><b>" + v + "</b></div>").join("");
-    msg.textContent = "";
-    $("csvP").style.display = "block";
-  } catch (e) {
-    msg.className = "err"; msg.textContent = PROFTXT.error;
-  }
+  await runProfile(pts, total, null);
 });
 
-function drawProfile(z, total, pts) {
+// Profil le long d'une trace GPX (au lieu d'une ligne droite entre A et B)
+$("loadP").addEventListener("click", () => $("fileP").click());
+$("fileP").addEventListener("change", () => {
+  const file = $("fileP").files && $("fileP").files[0];
+  if (!file) return;
+  const msg = $("msgP");
+  msg.textContent = ""; msg.className = "";
+  const rd = new FileReader();
+  rd.onerror = () => { msg.className = "err"; msg.textContent = PROFTXT.fileErr; };
+  rd.onload = async () => {
+    const track = readTrack(String(rd.result || ""));
+    const N = parseInt($("nP").value, 10) || 100;
+    const rs = track && track.length >= 2 ? resampleTrack(track, N) : null;
+    if (!rs) { msg.className = "err"; msg.textContent = PROFTXT.noTrack; return; }
+    const fmt = p => p.lat.toFixed(7) + ", " + p.lon.toFixed(7);
+    $("ptA").value = fmt(track[0]); $("ptB").value = fmt(track[track.length - 1]);
+    $("csvP").style.display = "none";
+    msg.textContent = PROFTXT.computing(N);
+    await runProfile(rs.pts, rs.total, rs.gps.some(v => v !== null) ? rs.gps : null);
+  };
+  rd.readAsText(file);
+  $("fileP").value = "";
+});
+
+function drawProfile(z, total, pts, gps) {
   const W = 640, H = 260, L = 48, R = 14, T = 12, B = 30;
   const valid = z.filter(v => v !== null);
-  let zmin = Math.min(...valid), zmax = Math.max(...valid);
+  const all = valid.concat((gps || []).filter(v => v !== null));
+  let zmin = Math.min(...all), zmax = Math.max(...all);
   if (zmax - zmin < 4) { const c = (zmax + zmin) / 2; zmin = c - 2; zmax = c + 2; }
   const step = niceStep(zmax - zmin, 4);
   const lo = Math.floor(zmin / step) * step, hi = Math.ceil(zmax / step) * step;
@@ -682,8 +802,16 @@ function drawProfile(z, total, pts) {
   z.forEach((v, i) => { if (v === null) flush(); else run.push([X(i), Y(v)]); });
   flush();
 
+  let gline = "";
+  if (gps) {
+    let r = [];
+    const fl = () => { if (r.length > 1) gline += "M" + r.map(([x, y]) => f(x) + "," + f(y)).join("L"); r = []; };
+    gps.forEach((v, i) => { if (v === null) fl(); else r.push([X(i), Y(v)]); });
+    fl();
+  }
+
   const svg = $("chart");
-  svg.innerHTML = g + '<path class="parea" d="' + area + '"/><path class="pline" d="' + line + '"/>' +
+  svg.innerHTML = g + '<path class="parea" d="' + area + '"/><path class="pline" d="' + line + '"/>' + (gline ? '<path class="pgps" d="' + gline + '"/>' : '') +
     '<g id="pcur" style="display:none"><line class="pcl" y1="' + T + '" y2="' + (H - B) + '"/><circle class="pdot" r="5"/></g>' +
     '<rect id="pover" x="' + L + '" y="' + T + '" width="' + PW + '" height="' + PH + '" fill="transparent" style="touch-action:pan-y"/>';
 
@@ -700,7 +828,7 @@ function drawProfile(z, total, pts) {
       hover.textContent = PROFTXT.hoverD + " " + fmtDist(total * i / (z.length - 1)) + " · " + PROFTXT.noPoint;
     } else {
       dot.style.display = ""; dot.setAttribute("cx", f(x)); dot.setAttribute("cy", f(Y(z[i])));
-      hover.textContent = PROFTXT.hoverD + " " + fmtDist(total * i / (z.length - 1)) + " · " + PROFTXT.hoverZ + " " + z[i].toFixed(1) + " m · " +
+      hover.textContent = PROFTXT.hoverD + " " + fmtDist(total * i / (z.length - 1)) + " · " + PROFTXT.hoverZ + " " + z[i].toFixed(1) + " m · " + (gps && gps[i] != null ? "GPX " + gps[i].toFixed(1) + " m · " : "") +
         pts[i].lat.toFixed(5) + ", " + pts[i].lon.toFixed(5);
     }
     cur.style.display = "";
@@ -714,6 +842,10 @@ function drawProfile(z, total, pts) {
 $("csvP").addEventListener("click", () => {
   const rows = [["volgnummer", "afstand_m", "breedtegraad", "lengtegraad", "hoogte_m"]];
   for (const p of lastProfile) rows.push([p.rang, Math.round(p.d), p.lat.toFixed(7), p.lon.toFixed(7), p.z === null ? "" : p.z.toFixed(2)]);
+  if (lastProfile.some(p => p.gps != null)) {
+    rows[0].push("hoogte_gps_m");
+    lastProfile.forEach((p, i) => rows[i + 1].push(p.gps != null ? p.gps.toFixed(2) : ""));
+  }
   downloadCSV(rows, "hoogteprofiel.csv");
 });
 </script>
