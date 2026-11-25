@@ -86,6 +86,8 @@
   <label for="coord">Coordonnées (copiées depuis Google Maps) — WGS 84, EPSG:4326</label>
   <input id="coord" inputmode="text" autocomplete="off" placeholder="46.7256825, -1.5683537">
 
+  <p>Ouvrir dans <a id="gmaps" target="_blank" rel="noopener">Google Maps</a> · <a id="amaps" target="_blank" rel="noopener">Plans (Apple)</a></p>
+
   <label for="resource">Source</label>
   <select id="resource">
     <option value="ign_lidar_hd_mnt_mono_wld">MNT LiDAR HD (avec interpolation)</option>
@@ -95,8 +97,6 @@
 
   <button id="go">Obtenir l’altitude</button>
   <button id="loc" class="sec">Utiliser ma position actuelle</button>
-
-  <p>Ouvrir dans <a id="gmaps" target="_blank" rel="noopener">Google Maps</a> · <a id="amaps" target="_blank" rel="noopener">Plans (Apple)</a></p>
 
   <div class="send">
     <button id="toN" class="sec">Ajouter à Plusieurs points</button>
@@ -160,15 +160,28 @@
       <input id="ptB" placeholder="46.7510, -1.5900">
     </div>
   </div>
-  <label for="resourceP">Source</label>
-  <select id="resourceP">
-    <option value="ign_lidar_hd_mnt_mono_wld">MNT LiDAR HD (avec interpolation)</option>
-    <option value="ign_lidar_hd_mnt_multi_wld" selected>MNT LiDAR HD (sans interpolation)</option>
-    <option value="ign_rge_alti_wld">RGE ALTI</option>
-  </select>
-  <label for="nP">Nombre de points du profil</label>
-  <select id="nP"><option value="10">10</option><option value="50">50</option><option value="100" selected>100</option></select>
-  <button id="goP">Tracer le profil</button>
+  <div class="row2">
+    <div>
+      <label for="resourceP">Source</label>
+      <select id="resourceP">
+        <option value="ign_lidar_hd_mnt_mono_wld">MNT LiDAR HD (avec interpolation)</option>
+        <option value="ign_lidar_hd_mnt_multi_wld" selected>MNT LiDAR HD (sans interpolation)</option>
+        <option value="ign_rge_alti_wld">RGE ALTI</option>
+      </select>
+    </div>
+    <div>
+      <label for="nP">Nombre de points du profil</label>
+      <select id="nP"><option value="10" selected>10</option><option value="50">50</option><option value="100">100</option></select>
+    </div>
+  </div>
+  <div class="row2">
+    <button id="altA" class="sec">Altitude manuelle du point A</button>
+    <button id="altB" class="sec">Altitude manuelle du point B</button>
+  </div>
+  <div class="row2">
+    <button id="goP">Tracer le profil (données IGN)</button>
+    <button id="goManualP" class="sec">Tracer le profil (altitudes manuelles)</button>
+  </div>
   <button id="swapAB" class="sec">Inverser A et B</button>
   <input type="file" id="fileP" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml" hidden>
   <button id="loadP" class="sec">Tracer le profil d’une trace GPX ou KML</button>
@@ -691,6 +704,37 @@ function toLambert93(lat, lon) {
 
 // --- Mode profil ---
 let lastProfile = [];
+let manualProfileAltA = null, manualProfileAltB = null;
+
+function askProfileAltitude(point) {
+  const isA = point === "A";
+  const current = isA ? manualProfileAltA : manualProfileAltB;
+  const answer = prompt(
+    "Altitude manuelle du point " + point + " (en mètres) :",
+    current === null ? "" : String(current)
+  );
+  if (answer === null) return;
+  const value = Number(answer.trim().replace(",", "."));
+  if (answer.trim() === "" || !Number.isFinite(value)) {
+    alert("Saisis une altitude numérique en mètres.");
+    return;
+  }
+  if (isA) manualProfileAltA = value;
+  else manualProfileAltB = value;
+  updateManualAltitudeLabels();
+}
+
+function updateManualAltitudeLabels() {
+  $("altA").textContent = manualProfileAltA === null
+    ? "Altitude manuelle du point A"
+    : "Point A : " + manualProfileAltA + " m";
+  $("altB").textContent = manualProfileAltB === null
+    ? "Altitude manuelle du point B"
+    : "Point B : " + manualProfileAltB + " m";
+}
+
+$("altA").addEventListener("click", () => askProfileAltitude("A"));
+$("altB").addEventListener("click", () => askProfileAltitude("B"));
 
 const PROFTXT = {
   hint: "Touchez ou survolez la courbe pour lire l’altitude.",
@@ -735,7 +779,13 @@ async function profElevations(pts, resource) {
 }
 
 $("swapAB").addEventListener("click", () => {
+  // Inverse les coordonnées et les altitudes manuelles pour conserver
+  // la correspondance entre chaque altitude et son point géographique.
   const a = $("ptA").value; $("ptA").value = $("ptB").value; $("ptB").value = a;
+  const z = manualProfileAltA;
+  manualProfileAltA = manualProfileAltB;
+  manualProfileAltB = z;
+  updateManualAltitudeLabels();
 });
 
 function readTrack(text) {
@@ -773,12 +823,16 @@ function resampleTrack(track, N) {
   return { pts, gps, total };
 }
 
-async function runProfile(pts, total, gps) {
+async function runProfile(pts, total, gps, manualOnly = false) {
   const msg = $("msgP");
   try {
-    const z = await profElevations(pts, $("resourceP").value);
-    if (!z.length || z.every(v => v === null)) { msg.className = "err"; msg.textContent = PROFTXT.noData; return; }
     const N = pts.length;
+    // Mode manuel : interpolation linéaire entre les altitudes saisies en A et B.
+    // Mode IGN : toutes les altitudes proviennent de la source IGN sélectionnée.
+    const z = manualOnly
+      ? pts.map((_, i) => manualProfileAltA + (manualProfileAltB - manualProfileAltA) * i / (N - 1))
+      : await profElevations(pts, $("resourceP").value);
+    if (!z.length || z.every(v => v === null)) { msg.className = "err"; msg.textContent = PROFTXT.noData; return; }
     lastProfile = z.map((zi, i) => ({ rang: i + 1, d: total * i / (N - 1), lat: pts[i].lat, lon: pts[i].lon, z: zi, gps: gps ? gps[i] : null }));
     $("profResult").style.display = "block";
     drawProfile(z, total, pts, gps);
@@ -795,8 +849,11 @@ async function runProfile(pts, total, gps) {
       [T.up, "+ " + Math.round(dPlus) + " m"], [T.down, "− " + Math.round(dMoins) + " m"]
     ];
     $("profInfo").innerHTML = items.map(([k, v]) => "<div><span>" + k + "</span><b>" + v + "</b></div>").join("");
-    // Légende et écart moyen entre l'altitude du GPS (fichier GPX) et celle de la source
-    if (gps) {
+    // Légende selon le mode de calcul ; comparaison GPS uniquement pour les traces.
+    if (manualOnly) {
+      $("profLegend").textContent = "Profil calculé uniquement à partir des altitudes saisies manuellement (interpolation linéaire entre A et B).";
+      $("profGps").textContent = "";
+    } else if (gps) {
       $("profLegend").innerHTML = '<span class="lg"></span>' + PROFTXT.srcLabel + ' &nbsp; <span class="lg lg2"></span>' + PROFTXT.gpsLabel;
       const ds = z.map((v, i) => v !== null && gps[i] !== null ? gps[i] - v : null).filter(d => d !== null);
       if (ds.length) {
@@ -826,7 +883,30 @@ $("goP").addEventListener("click", async () => {
     const t = i / (N - 1);
     pts.push({ lat: A.lat + (B.lat - A.lat) * t, lon: A.lon + (B.lon - A.lon) * t });
   }
-  await runProfile(pts, total, null);
+  await runProfile(pts, total, null, false);
+});
+
+$("goManualP").addEventListener("click", async () => {
+  const msg = $("msgP");
+  msg.textContent = ""; msg.className = "";
+  $("csvP").style.display = "none";
+  if (manualProfileAltA === null || manualProfileAltB === null) {
+    msg.className = "err";
+    msg.textContent = "Saisis d’abord l’altitude manuelle des points A et B.";
+    return;
+  }
+  const A = parse($("ptA").value), B = parse($("ptB").value);
+  const bad = p => !p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180;
+  if (bad(A) || bad(B)) { msg.className = "err"; msg.textContent = PROFTXT.badCoords; return; }
+  const total = haversine(A, B);
+  if (total < 1) { msg.className = "err"; msg.textContent = PROFTXT.samePoint; return; }
+  const N = parseInt($("nP").value, 10) || 10, pts = [];
+  msg.textContent = "Calcul du profil avec les altitudes manuelles (" + N + " points)…";
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    pts.push({ lat: A.lat + (B.lat - A.lat) * t, lon: A.lon + (B.lon - A.lon) * t });
+  }
+  await runProfile(pts, total, null, true);
 });
 
 // Profil le long d'une trace GPX (au lieu d'une ligne droite entre A et B)
