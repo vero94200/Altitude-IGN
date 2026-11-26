@@ -59,6 +59,10 @@
   .send button { margin-top:0; }
   #sendMsg { min-height:1.3em; margin-top:6px; }
   #tableN { overflow-x:auto; }
+  #tableN table { font-size:.8rem; width:auto; min-width:100%; }
+  #tableN th, #tableN td { padding:4px 7px; white-space:nowrap; }
+  #tableN th { position:sticky; top:0; background:var(--card); }
+  #tableN .zone { font-weight:700; }
   .lg { display:inline-block; width:20px; border-top:2px solid var(--prof); vertical-align:middle; margin-right:6px; }
   .lg2 { border-top:2px dashed var(--fg); opacity:.75; }
   .pgps { fill:none; stroke:var(--fg); stroke-width:1.5; stroke-dasharray:5 4; opacity:.75; stroke-linejoin:round; }
@@ -174,14 +178,7 @@
       <select id="nP"><option value="10" selected>10</option><option value="50">50</option><option value="100">100</option></select>
     </div>
   </div>
-  <div class="row2">
-    <button id="altA" class="sec">Altitude manuelle du point A</button>
-    <button id="altB" class="sec">Altitude manuelle du point B</button>
-  </div>
-  <div class="row2">
-    <button id="goP">Tracer le profil (données IGN)</button>
-    <button id="goManualP" class="sec">Tracer le profil (altitudes manuelles)</button>
-  </div>
+  <button id="goP">Tracer le profil</button>
   <button id="swapAB" class="sec">Inverser A et B</button>
   <input type="file" id="fileP" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml" hidden>
   <button id="loadP" class="sec">Tracer le profil d’une trace GPX ou KML</button>
@@ -515,7 +512,7 @@ $("goN").addEventListener("click", async () => {
 
 async function renderMulti() {
   const tbl = $("tableN");
-  let html = "<table><tr><th>#</th><th>Latitude</th><th>Longitude</th><th>Altitude</th>" + eleHead() + "<th>Commune</th><th>Carte</th></tr>";
+  let html = "<table><tr><th>#</th><th>Latitude</th><th>Longitude</th><th>Altitude</th>" + eleHead() + "<th>X L93 (m)</th><th>Y L93 (m)</th><th>Zone CC</th><th>X CC (m)</th><th>Y CC (m)</th><th>Commune</th><th>Carte</th></tr>";
   for (const p of lastMulti) {
     let com = "";
     try {
@@ -524,20 +521,32 @@ async function renderMulti() {
       com = j.length ? j[0].nom : "";
     } catch (e) {}
     const q = p.lat.toFixed(7) + "," + p.lon.toFixed(7);
+    const l93 = toLambert93(p.lat, p.lon);
+    const ccz = ccZone(p.lat), cc = toCC(p.lat, p.lon, ccz);
     html += "<tr><td>" + p.ligne + "</td><td>" + p.lat.toFixed(6) + "</td><td>" + p.lon.toFixed(6) + "</td><td class='r'>" +
-            (p.z != null && p.z > -99990 ? p.z.toFixed(2) + " m" : "—") + "</td>" + eleCells(p) + "<td>" + com +
+            (p.z != null && p.z > -99990 ? p.z.toFixed(2) + " m" : "—") + "</td>" + eleCells(p) +
+            "<td class='r'>" + l93.x.toFixed(2) + "</td><td class='r'>" + l93.y.toFixed(2) + "</td>" +
+            "<td class='zone'>CC" + ccz + "</td><td class='r'>" + cc.x.toFixed(2) + "</td><td class='r'>" + cc.y.toFixed(2) + "</td><td>" + com +
             "</td><td><a target=\"_blank\" rel=\"noopener\" href=\"https://maps.apple.com/?q=" + q + "\">Plans</a> · " +
             "<a target=\"_blank\" rel=\"noopener\" href=\"https://www.google.com/maps?q=" + q + "\">Maps</a></td></tr>";
   }
   html += "</table>";
-  html += "<p class='small'>Latitude et longitude : WGS 84 (EPSG:4326).</p>";
+  const zones = {};
+  lastMulti.forEach(p => { const z = "CC" + ccZone(p.lat); zones[z] = (zones[z] || 0) + 1; });
+  html += "<p class='small'><b>Zones CC utilisées :</b> " +
+          Object.keys(zones).sort().map(z => "<b class='zone'>" + z + "</b> (" + zones[z] + (zones[z] > 1 ? " points" : " point") + ")").join(" · ") + "</p>";
+  html += "<p class='small'>Latitude et longitude : WGS 84 (EPSG:4326). X (Est) et Y (Nord) : RGF93 / Lambert 93 (EPSG:2154). X et Y CC : RGF93, conique conforme CC42 à CC50 (EPSG:3942 à 3950), zone choisie automatiquement selon la latitude.</p>";
   html += eleSummary();
   tbl.innerHTML = html;
 }
 
 $("csv").addEventListener("click", () => {
-  const rows = [["ligne", "latitude", "longitude", "altitude_m"]];
-  for (const p of lastMulti) rows.push([p.ligne, p.lat, p.lon, p.z != null && p.z > -99990 ? p.z.toFixed(2) : ""]);
+  const rows = [["ligne", "latitude", "longitude", "altitude_m", "x_lambert93_m", "y_lambert93_m", "zone_cc", "x_cc_m", "y_cc_m"]];
+  for (const p of lastMulti) {
+    const r = toLambert93(p.lat, p.lon);
+    const z = ccZone(p.lat), c = toCC(p.lat, p.lon, z);
+    rows.push([p.ligne, p.lat, p.lon, p.z != null && p.z > -99990 ? p.z.toFixed(2) : "", r.x.toFixed(2), r.y.toFixed(2), "CC" + z, c.x.toFixed(2), c.y.toFixed(2)]);
+  }
   if (hasEle()) {
     rows[0].push("altitude_gpx_m", "ecart_m");
     lastMulti.forEach((p, i) => { const d = diffOf(p); rows[i + 1].push(p.ele != null && !isNaN(p.ele) ? p.ele.toFixed(2) : "", d !== null ? d.toFixed(2) : ""); });
@@ -658,6 +667,22 @@ function toLambert93(lat, lon) {
   const th = n * (lon * rad - l0);
   return { x: 700000 + rho * Math.sin(th), y: 6600000 + rho0 - rho * Math.cos(th) };
 }
+
+// --- Coniques conformes RGF93 : zones CC42 à CC50 (EPSG:3942 à 3950) ---
+// 9 zones de 1° de large (CC4x couvre x-1° à x+1°), parallèle d'origine x, méridien 3° E,
+// parallèles standards x-0,75° et x+0,75°, X0 = 1 700 000 m, Y0 = 1 200 000 + (x-42) × 1 000 000 m.
+function toCC(lat, lon, zone) {
+  const a = 6378137, e = 0.0818191910428158, rad = Math.PI / 180;
+  const m = p => Math.cos(p) / Math.sqrt(1 - e * e * Math.sin(p) ** 2);
+  const t = p => Math.tan(Math.PI / 4 - p / 2) / Math.pow((1 - e * Math.sin(p)) / (1 + e * Math.sin(p)), e / 2);
+  const p0 = zone * rad, p1 = (zone - 0.75) * rad, p2 = (zone + 0.75) * rad, l0 = 3 * rad;
+  const n = (Math.log(m(p1)) - Math.log(m(p2))) / (Math.log(t(p1)) - Math.log(t(p2)));
+  const F = m(p1) / (n * Math.pow(t(p1), n));
+  const rho = a * F * Math.pow(t(lat * rad), n), rho0 = a * F * Math.pow(t(p0), n);
+  const th = n * (lon * rad - l0);
+  return { x: 1700000 + rho * Math.sin(th), y: 1200000 + (zone - 42) * 1000000 + rho0 - rho * Math.cos(th) };
+}
+function ccZone(lat) { return Math.min(50, Math.max(42, Math.round(lat))); }
 (function () {
   let last = "";
   const out = $("l93res"), copy = $("copyL93");
@@ -704,37 +729,6 @@ function toLambert93(lat, lon) {
 
 // --- Mode profil ---
 let lastProfile = [];
-let manualProfileAltA = null, manualProfileAltB = null;
-
-function askProfileAltitude(point) {
-  const isA = point === "A";
-  const current = isA ? manualProfileAltA : manualProfileAltB;
-  const answer = prompt(
-    "Altitude manuelle du point " + point + " (en mètres) :",
-    current === null ? "" : String(current)
-  );
-  if (answer === null) return;
-  const value = Number(answer.trim().replace(",", "."));
-  if (answer.trim() === "" || !Number.isFinite(value)) {
-    alert("Saisis une altitude numérique en mètres.");
-    return;
-  }
-  if (isA) manualProfileAltA = value;
-  else manualProfileAltB = value;
-  updateManualAltitudeLabels();
-}
-
-function updateManualAltitudeLabels() {
-  $("altA").textContent = manualProfileAltA === null
-    ? "Altitude manuelle du point A"
-    : "Point A : " + manualProfileAltA + " m";
-  $("altB").textContent = manualProfileAltB === null
-    ? "Altitude manuelle du point B"
-    : "Point B : " + manualProfileAltB + " m";
-}
-
-$("altA").addEventListener("click", () => askProfileAltitude("A"));
-$("altB").addEventListener("click", () => askProfileAltitude("B"));
 
 const PROFTXT = {
   hint: "Touchez ou survolez la courbe pour lire l’altitude.",
@@ -779,13 +773,7 @@ async function profElevations(pts, resource) {
 }
 
 $("swapAB").addEventListener("click", () => {
-  // Inverse les coordonnées et les altitudes manuelles pour conserver
-  // la correspondance entre chaque altitude et son point géographique.
   const a = $("ptA").value; $("ptA").value = $("ptB").value; $("ptB").value = a;
-  const z = manualProfileAltA;
-  manualProfileAltA = manualProfileAltB;
-  manualProfileAltB = z;
-  updateManualAltitudeLabels();
 });
 
 function readTrack(text) {
@@ -823,16 +811,12 @@ function resampleTrack(track, N) {
   return { pts, gps, total };
 }
 
-async function runProfile(pts, total, gps, manualOnly = false) {
+async function runProfile(pts, total, gps) {
   const msg = $("msgP");
   try {
-    const N = pts.length;
-    // Mode manuel : interpolation linéaire entre les altitudes saisies en A et B.
-    // Mode IGN : toutes les altitudes proviennent de la source IGN sélectionnée.
-    const z = manualOnly
-      ? pts.map((_, i) => manualProfileAltA + (manualProfileAltB - manualProfileAltA) * i / (N - 1))
-      : await profElevations(pts, $("resourceP").value);
+    const z = await profElevations(pts, $("resourceP").value);
     if (!z.length || z.every(v => v === null)) { msg.className = "err"; msg.textContent = PROFTXT.noData; return; }
+    const N = pts.length;
     lastProfile = z.map((zi, i) => ({ rang: i + 1, d: total * i / (N - 1), lat: pts[i].lat, lon: pts[i].lon, z: zi, gps: gps ? gps[i] : null }));
     $("profResult").style.display = "block";
     drawProfile(z, total, pts, gps);
@@ -849,11 +833,8 @@ async function runProfile(pts, total, gps, manualOnly = false) {
       [T.up, "+ " + Math.round(dPlus) + " m"], [T.down, "− " + Math.round(dMoins) + " m"]
     ];
     $("profInfo").innerHTML = items.map(([k, v]) => "<div><span>" + k + "</span><b>" + v + "</b></div>").join("");
-    // Légende selon le mode de calcul ; comparaison GPS uniquement pour les traces.
-    if (manualOnly) {
-      $("profLegend").textContent = "Profil calculé uniquement à partir des altitudes saisies manuellement (interpolation linéaire entre A et B).";
-      $("profGps").textContent = "";
-    } else if (gps) {
+    // Légende et écart moyen entre l'altitude du GPS (fichier GPX) et celle de la source
+    if (gps) {
       $("profLegend").innerHTML = '<span class="lg"></span>' + PROFTXT.srcLabel + ' &nbsp; <span class="lg lg2"></span>' + PROFTXT.gpsLabel;
       const ds = z.map((v, i) => v !== null && gps[i] !== null ? gps[i] - v : null).filter(d => d !== null);
       if (ds.length) {
@@ -883,30 +864,7 @@ $("goP").addEventListener("click", async () => {
     const t = i / (N - 1);
     pts.push({ lat: A.lat + (B.lat - A.lat) * t, lon: A.lon + (B.lon - A.lon) * t });
   }
-  await runProfile(pts, total, null, false);
-});
-
-$("goManualP").addEventListener("click", async () => {
-  const msg = $("msgP");
-  msg.textContent = ""; msg.className = "";
-  $("csvP").style.display = "none";
-  if (manualProfileAltA === null || manualProfileAltB === null) {
-    msg.className = "err";
-    msg.textContent = "Saisis d’abord l’altitude manuelle des points A et B.";
-    return;
-  }
-  const A = parse($("ptA").value), B = parse($("ptB").value);
-  const bad = p => !p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180;
-  if (bad(A) || bad(B)) { msg.className = "err"; msg.textContent = PROFTXT.badCoords; return; }
-  const total = haversine(A, B);
-  if (total < 1) { msg.className = "err"; msg.textContent = PROFTXT.samePoint; return; }
-  const N = parseInt($("nP").value, 10) || 10, pts = [];
-  msg.textContent = "Calcul du profil avec les altitudes manuelles (" + N + " points)…";
-  for (let i = 0; i < N; i++) {
-    const t = i / (N - 1);
-    pts.push({ lat: A.lat + (B.lat - A.lat) * t, lon: A.lon + (B.lon - A.lon) * t });
-  }
-  await runProfile(pts, total, null, true);
+  await runProfile(pts, total, null);
 });
 
 // Profil le long d'une trace GPX (au lieu d'une ligne droite entre A et B)
