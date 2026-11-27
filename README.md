@@ -1,25 +1,27 @@
 ⛰️ Altitude IGN
-Connaître l'altitude d'un point en France et en Belgique / De hoogte van een punt kennen in Frankrijk en België — une simple page web, sans installation.
+Connaître l'altitude d'un point en France et en Belgique / De hoogte van een punt kennen in Frankrijk en België — une seule page web bilingue, sans installation.
+/ Eén tweetalige webpagina, zonder installatie.
 
-France : IGN – Géoplateforme (LiDAR HD / RGE ALTI), recherche par adresse ou commune (api-adresse.data.gouv.fr, geo.api.gouv.fr).
+France : IGN – Géoplateforme (LiDAR HD / RGE ALTI), recherche par adresse ou commune (api-adresse.data.gouv.fr, geo.api.gouv.fr), conversion Lambert 93 / CC42–CC50, date d'acquisition LiDAR.
 
-Belgique / België : altitudes via Open-Meteo Elevation et OpenTopoData (EU-DEM), localisation via Nominatim.
+Belgique / België : altitudes via Open-Meteo Elevation (Copernicus GLO-90) et OpenTopoData (EU-DEM), localisation via Nominatim.
 
 Fonctionnalités / Functies
-Altitude d'un point : coordonnées, adresse, commune / coördinaten, adres, gemeente
-Plusieurs points en une fois / Meerdere punten tegelijk
-Import de fichier / Bestand importeren
-Liens Google Maps et Plans / Links naar Google Maps en Apple Plans
+Altitude d'un point : coordonnées, adresse, position GPS, commune / coördinaten, adres, GPS-locatie, gemeente
+Plusieurs points en une fois, import de fichier (.txt, .csv, .gpx, .kml), export CSV / Meerdere punten tegelijk, bestand importeren, CSV-export
+Profil altimétrique entre deux points ou le long d'une trace / Hoogteprofiel tussen twee punten of langs een track
+Comparaison avec l'altitude enregistrée par le GPS (fichiers GPX) / Vergelijking met de GPS-hoogte (GPX-bestanden)
+Liens Google Maps et Plans (Apple) / Links naar Google Maps en Apple Plans
+Choix du pays (🇫🇷 / 🇧🇪) et de la langue (FR / NL) mémorisé dans le navigateur / Keuze van land en taal onthouden in de browser
 Utilisation / Gebruik
-Ouvrez la page du pays choisi, ou la page d'accueil qui redirige vers la langue souhaitée :
-/ Open de pagina van het gekozen land, of de startpagina die naar de gewenste taal verwijst :
+Une seule page, index.html : choisissez le pays et la langue en haut de la page.
+/ Eén pagina, index.html: kies het land en de taal bovenaan de pagina.
 
-index.html          → accueil bilingue / tweetalige startpagina
-France/index.html   → France (FR)
-Belgique/index.html → Belgique (FR)
-België/index.html   → België (NL)
+index.html   → page unique bilingue France / Belgique, FR / NL
+               één tweetalige pagina Frankrijk / België, FR / NL
+altitud.png  → icône / pictogram
 Déploiement / Implementatie
-Site statique (HTML/CSS/JS, sans dépendance ni clé d'API) : hébergeable sur GitHub Pages ou n'importe quel serveur web.
+Site statique (HTML/CSS/JS, sans dépendance ni clé d'API) : hébergeable sur GitHub Pages (Settings → Pages → branche main, dossier / (root)) ou n'importe quel serveur web.
 / Statische site (HTML/CSS/JS, zonder afhankelijkheden of API-sleutel): hostbaar op GitHub Pages of elke webserver.
 
 Licence / Licentie
