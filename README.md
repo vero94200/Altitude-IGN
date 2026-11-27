@@ -1,6 +1,5 @@
 Altitude IGN
-Connaître l'altitude d'un point en France et en Belgique / De hoogte van een punt kennen in Frankrijk en België — une seule page web bilingue, sans installation.
-/ Eén tweetalige webpagina, zonder installatie.
+Connaître l'altitude d'un point en France et en Belgique / De hoogte van een punt kennen in Frankrijk en België
 
 France : IGN – Géoplateforme (LiDAR HD / RGE ALTI), recherche par adresse ou commune (api-adresse.data.gouv.fr, geo.api.gouv.fr), conversion Lambert 93 / CC42–CC50, date d'acquisition LiDAR.
 
@@ -9,7 +8,7 @@ Belgique / België : altitudes via Open-Meteo Elevation (Copernicus GLO-90) et O
 Fonctionnalités / Functies
 Altitude d'un point : coordonnées, adresse, position GPS, commune / coördinaten, adres, GPS-locatie, gemeente
 Plusieurs points en une fois, import de fichier (.txt, .csv, .gpx, .kml), export CSV / Meerdere punten tegelijk, bestand importeren, CSV-export
-Profil altimétrique entre deux points ou le long d'une trace / Hoogteprofiel tussen twee punten of langs een track
+Profil altimétrique entre deux points ou le long d'un tracé / Hoogteprofiel tussen twee punten of langs een track
 Comparaison avec l'altitude enregistrée par le GPS (fichiers GPX) / Vergelijking met de GPS-hoogte (GPX-bestanden)
 France : conversion Lambert 93 / CC42–CC50, date d'acquisition LiDAR — Belgique : conversion Lambert 72 et Lambert 2008 / Frankrijk: conversie Lambert 93 / CC42–CC50, LiDAR-opnamedatum — België: conversie Lambert 72 en Lambert 2008
 Liens Google Maps et Plans (Apple) / Links naar Google Maps en Apple Plans
