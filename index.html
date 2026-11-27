@@ -78,9 +78,11 @@
   #profGps { margin-top:4px; }
   #l93res { margin-top:8px; }
   #l93res b { font-variant-numeric:tabular-nums; }
+  body.pays-be .only-fr { display:none; }
+  body.pays-fr .only-be { display:none; }
 </style>
 </head>
-<body>
+<body class="pays-fr">
 <h1>Altitude <span id="paysTitre">France</span></h1>
 
 <div class="switches">
@@ -127,6 +129,10 @@
   <button id="toL93" class="sec only-fr" data-i18n="toL93">Convertir en Lambert 93 (RGF93)</button>
   <div id="l93res" class="small only-fr" role="status"></div>
   <button id="copyL93" class="sec only-fr" style="display:none" data-i18n="copyL93">Copier X ; Y</button>
+
+  <button id="toL72" class="sec only-be" data-i18n="toL72">Convertir en Lambert belge (L72 et L2008)</button>
+  <div id="l72res" class="small only-be" role="status"></div>
+  <button id="copyL72" class="sec only-be" style="display:none" data-i18n="copyL72">Copier X ; Y (L72)</button>
 
   <div id="res">
     <div id="alt"></div>
@@ -227,6 +233,8 @@ const I18N = {
   toB:    { fr: "Définir comme point B du profil", nl: "Instellen als punt B van het profiel" },
   toL93:  { fr: "Convertir en Lambert 93 (RGF93)", nl: "Converteren naar Lambert 93 (RGF93)" },
   copyL93:{ fr: "Copier X ; Y", nl: "X ; Y kopiëren" },
+  toL72:  { fr: "Convertir en Lambert belge (L72 et L2008)", nl: "Converteren naar Belgische Lambert (L72 en L2008)" },
+  copyL72:{ fr: "Copier X ; Y (L72)", nl: "X ; Y kopiëren (L72)" },
   copyalt:{ fr: "Copier l’altitude", nl: "Hoogte kopiëren" },
   ptLabel:{ fr: "Point", nl: "Punt" },
   openReq:{ fr: "Ouvrir la requête", nl: "Verzoek openen" },
@@ -294,6 +302,10 @@ const M = {
   l93Y:          { fr: "Y (Nord) : ", nl: "Y (noord): " },
   l93Outside:    { fr: "⚠ Ce point est hors de la France métropolitaine : le Lambert 93 n’y est pas défini avec précision.",
                    nl: "⚠ Dit punt ligt buiten Europees Frankrijk: Lambert 93 is er niet nauwkeurig gedefinieerd." },
+  l72Title:      { fr: "Belge 1972 / Lambert 72 (EPSG:31370)", nl: "Belge 1972 / Lambert 72 (EPSG:31370)" },
+  l2008Title:    { fr: "ETRS89 / Lambert 2008 (EPSG:3812)", nl: "ETRS89 / Lambert 2008 (EPSG:3812)" },
+  l72Outside:    { fr: "⚠ Ce point semble hors de la Belgique : les coordonnées Lambert belges n’y sont pas précises.",
+                   nl: "⚠ Dit punt lijkt buiten België te liggen: de Belgische Lambert-coördinaten zijn er niet nauwkeurig." },
   zonesUsed:     { fr: "Zones CC utilisées :", nl: "Gebruikte CC-zones:" },
   zonePoint:     { fr: " points)", nl: " punten)" },
   zonePoint1:    { fr: " point)", nl: " punt)" },
@@ -386,8 +398,9 @@ function applyCountryPlaceholders() {
 }
 function setPays(p) {
   PAYS = p; localStorage.setItem("alt_pays", p);
-  // Blocs propres à la France (Lambert 93 / CC, date LiDAR)
-  document.querySelectorAll(".only-fr").forEach(el => el.style.display = p === "fr" ? "" : "none");
+  // Blocs propres à un pays : France (Lambert 93 / CC, date LiDAR), Belgique (Lambert 72 / 2008)
+  document.body.classList.toggle("pays-fr", p === "fr");
+  document.body.classList.toggle("pays-be", p === "be");
   applyLang();
 }
 document.querySelectorAll("#swPays button").forEach(b => b.addEventListener("click", () => setPays(b.dataset.pays)));
@@ -1025,6 +1038,69 @@ function ccZone(lat) { return Math.min(50, Math.max(42, Math.round(lat))); }
     out.innerHTML = t(M.l93Title) + "<br>" + t(M.l93X) + "<b>" + f(r.x) + " m</b><br>" + t(M.l93Y) + "<b>" + f(r.y) + " m</b>";
     if (p.lat < 41 || p.lat > 51.5 || p.lon < -5.5 || p.lon > 10)
       out.innerHTML += "<br>" + t(M.l93Outside);
+    copy.style.display = "block";
+  });
+  copy.addEventListener("click", () => navigator.clipboard.writeText(last));
+  $("coord").addEventListener("input", reset);
+})();
+
+// --- Systèmes officiels belges : Lambert 72 (EPSG:31370) et Lambert 2008 (EPSG:3812) ---
+// Conique conforme à 2 parallèles (méthode EPSG:9802) ; parallèle d'origine et fausses coordonnées
+// de chaque système. Lambert 2008 est rapporté à ETRS89 (≈ WGS84) : projection directe.
+// Lambert 72 est rapporté au datum BD72 (ellipsoïde International 1924) : sans le changement de
+// datum WGS84 → BD72 (transformation officielle EPSG:1609/1652, précision ~1 m), les coordonnées
+// seraient décalées d'environ 90 à 100 m.
+const L72_P = { a: 6378388, f: 1 / 297, p0: 90, p1: 51.1666672333333, p2: 49.8333339,
+                l0: 4.36748666666667, x0: 150000.013, y0: 5400088.438 };
+const L2008_P = { a: 6378137, f: 1 / 298.257222101, p0: 50.797815, p1: 49.8333333333333, p2: 51.1666666666667,
+                  l0: 4.35921583333333, x0: 649328, y0: 665262 };
+
+function lcc2sp(lat, lon, p) {
+  const rad = Math.PI / 180, e = Math.sqrt(2 * p.f - p.f * p.f);
+  const m = q => Math.cos(q) / Math.sqrt(1 - e * e * Math.sin(q) ** 2);
+  const tt = q => Math.tan(Math.PI / 4 - q / 2) / Math.pow((1 - e * Math.sin(q)) / (1 + e * Math.sin(q)), e / 2);
+  const q1 = p.p1 * rad, q2 = p.p2 * rad, q0 = p.p0 * rad;
+  const n = (Math.log(m(q1)) - Math.log(m(q2))) / (Math.log(tt(q1)) - Math.log(tt(q2)));
+  const F = m(q1) / (n * Math.pow(tt(q1), n));
+  const r = p.a * F * Math.pow(tt(lat * rad), n), r0 = p.a * F * Math.pow(tt(q0), n);
+  const th = n * (lon * rad - p.l0 * rad);
+  return { x: p.x0 + r * Math.sin(th), y: p.y0 + r0 - r * Math.cos(th) };
+}
+
+// WGS84 → BD72 : inverse de « BD72 to WGS 84 (1) » (rotation de repère, EPSG:9607 :
+// translation −99.059, 53.322, −112.486 m ; rotations −0.419", 0.830", −1.885" ; échelle −1 ppm)
+function toLambert72(lat, lon) {
+  const rad = Math.PI / 180, T = { x: -99.059, y: 53.322, z: -112.486 },
+        rx = -0.419 / 3600 / 180 * Math.PI, ry = 0.83 / 3600 / 180 * Math.PI, rz = -1.885 / 3600 / 180 * Math.PI, s = -1e-6;
+  const sw = Math.sin(lat * rad), cw = Math.cos(lat * rad), e2 = 0.0066943799901413165;
+  const Nw = 6378137 / Math.sqrt(1 - e2 * sw * sw);
+  const xw = Nw * cw * Math.cos(lon * rad), yw = Nw * cw * Math.sin(lon * rad), zw = Nw * (1 - e2) * sw;
+  const vx = xw - T.x, vy = yw - T.y, vz = zw - T.z, k = 1 - s;
+  // inverse : X_bd ≈ (1 − s) · (X_w − T + rotation de repère inverse)
+  const xb = k * (vx + ry * vz - rz * vy), yb = k * (vy + rz * vx - rx * vz), zb = k * (vz + rx * vy - ry * vx);
+  // cartésien → géodésique BD72 (ellipsoïde International 1924), méthode de Bowring
+  const a = 6378388, f = 1 / 297, e2b = 2 * f - f * f, b = a * (1 - f), ep2 = (a * a - b * b) / (b * b);
+  const p2 = Math.hypot(xb, yb), th = Math.atan2(zb * a, p2 * b);
+  const latB = Math.atan2(zb + ep2 * b * Math.sin(th) ** 3, p2 - e2b * a * Math.cos(th) ** 3);
+  return lcc2sp(latB / rad, Math.atan2(yb, xb) / rad, L72_P);
+}
+
+(function () {
+  let last = "";
+  const out = $("l72res"), copy = $("copyL72");
+  const reset = () => { out.textContent = ""; out.className = "small"; copy.style.display = "none"; last = ""; };
+  $("toL72").addEventListener("click", () => {
+    reset();
+    const p = parse($("coord").value);
+    if (!p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180) {
+      out.className = "small err"; out.textContent = t(M.coordBadFirst); return;
+    }
+    const f = v => v.toLocaleString(LANG === "fr" ? "fr-FR" : "nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const r72 = toLambert72(p.lat, p.lon), r08 = lcc2sp(p.lat, p.lon, L2008_P);
+    last = r72.x.toFixed(2) + ";" + r72.y.toFixed(2);
+    out.innerHTML = t(M.l72Title) + "<br>" + t(M.l93X) + "<b>" + f(r72.x) + " m</b><br>" + t(M.l93Y) + "<b>" + f(r72.y) + " m</b>" +
+      "<br><br>" + t(M.l2008Title) + "<br>" + t(M.l93X) + "<b>" + f(r08.x) + " m</b><br>" + t(M.l93Y) + "<b>" + f(r08.y) + " m</b>";
+    if (!inCountry(p)) out.innerHTML += "<br>" + t(M.l72Outside);
     copy.style.display = "block";
   });
   copy.addEventListener("click", () => navigator.clipboard.writeText(last));
