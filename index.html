@@ -1,244 +1,1285 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<link rel="icon" href="altitud.png">
-<link rel="apple-touch-icon" href="altitud.png">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1565c0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Altitude – France et Belgique / Hoogte – Frankrijk en België</title>
 <meta name="description" content="Connaître l’altitude d’un point en France et en Belgique. / De hoogte van een punt kennen in Frankrijk en België.">
-
+<link rel="icon" href="altitud.png">
+<link rel="apple-touch-icon" href="altitud.png">
 <style>
-:root {
-    --bg: #edf1f2;
-    --surface: #ffffff;
-    --ink: #12303d;
-    --muted: #54707c;
-    --line: #cdd9dd;
-    --contour: #2f7f86;
-    --focus: #0b57d0;
-}
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg: #0f1a1f;
-        --surface: #172429;
-        --ink: #e6eff1;
-        --muted: #9db4bc;
-        --line: #2b3d44;
-        --contour: #5db3bb;
-        --focus: #8ab4f8;
-    }
-}
-
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    min-height: 100vh;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    line-height: 1.5;
-}
-
-.page {
-    width: 100%;
-    max-width: 540px;
-    margin: 0 auto;
-    padding: 0 20px 40px;
-}
-
-/* ---------- En-tête ---------- */
-header {
-    position: relative;
-    padding: 56px 0 28px;
-    overflow: hidden;
-}
-
-.contours {
-    position: absolute;
-    right: -60px;
-    top: 0;
-    width: 340px;
-    height: 100%;
-    color: var(--contour);
-    opacity: .35;
-    pointer-events: none;
-}
-
-h1 {
-    position: relative;
-    margin: 0;
-    font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-    font-size: clamp(2.6rem, 11vw, 3.6rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1;
-}
-
-.baseline {
-    position: relative;
-    margin: 16px 0 0;
-    max-width: 30em;
-    font-size: 1.05rem;
-}
-
-.baseline .nl {
-    display: block;
-    margin-top: 2px;
-    color: var(--muted);
-}
-
-/* ---------- Choix du pays ---------- */
-h2 {
-    margin: 12px 0 14px;
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-h2 .nl {
-    color: var(--muted);
-    font-weight: 400;
-}
-
-ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 12px;
-}
-
-.pays {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 44px 16px 16px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    color: inherit;
-    text-decoration: none;
-    transition: border-color .15s, background-color .15s;
-}
-
-.pays:hover { border-color: var(--contour); }
-
-.pays:focus-visible {
-    outline: 3px solid var(--focus);
-    outline-offset: 2px;
-}
-
-/* chevron */
-.pays::after {
-    content: "";
-    position: absolute;
-    right: 18px;
-    top: 50%;
-    width: 9px;
-    height: 9px;
-    border-top: 2px solid var(--muted);
-    border-right: 2px solid var(--muted);
-    transform: translateY(-50%) rotate(45deg);
-}
-
-.drapeau {
-    flex: none;
-    width: 42px;
-    height: 28px;
-    border-radius: 3px;
-    box-shadow: 0 0 0 1px var(--line);
-}
-.fr { background: linear-gradient(to right, #0055a4 0 33.3%, #ffffff 33.3% 66.6%, #ef4135 66.6% 100%); }
-.be { background: linear-gradient(to right, #000000 0 33.3%, #fae042 33.3% 66.6%, #ed2939 66.6% 100%); }
-
-.texte { min-width: 0; }
-
-.nom {
-    display: block;
-    font-size: 1.15rem;
-    font-weight: 600;
-    line-height: 1.25;
-}
-
-.detail {
-    display: block;
-    margin-top: 2px;
-    font-size: .9rem;
-    color: var(--muted);
-}
-
-/* ---------- Pied de page ---------- */
-footer {
-    margin-top: 32px;
-    font-size: .85rem;
-    color: var(--muted);
-}
-footer p { margin: 0 0 2px; }
+  :root { --bg:#fff; --fg:#1b1f24; --muted:#5b6570; --card:#f2f4f7; --accent:#0b57d0; --err:#b3261e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171a; --fg:#e8eaed; --muted:#9aa4af; --card:#20252b; --accent:#8ab4f8; --err:#f2b8b5; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg);
+         font:16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; max-width:640px; margin-inline:auto; }
+  h1 { font-size:1.3rem; margin:4px 0 12px; }
+  h2 { font-size:1.05rem; margin:20px 0 6px; }
+  label { display:block; font-size:.9rem; color:var(--muted); margin:12px 0 4px; }
+  input, select, textarea, button { font:inherit; padding:12px; border-radius:10px;
+         border:1px solid var(--muted); background:var(--card); color:var(--fg); }
+  input, select, textarea { width:100%; }
+  textarea { min-height:90px; resize:vertical; }
+  button { background:var(--accent); color:#fff; border:0; font-weight:600; margin-top:14px; width:100%; cursor:pointer; }
+  button.sec { background:var(--card); color:var(--fg); border:1px solid var(--muted); margin-top:10px; }
+  button:disabled { opacity:.5; cursor:default; }
+  .switches { display:flex; gap:8px; margin:6px 0 8px; flex-wrap:wrap; }
+  .sw { display:flex; gap:6px; }
+  .sw button { margin:0; padding:8px 14px; width:auto; background:var(--card); color:var(--fg);
+               border:1px solid var(--muted); border-radius:999px; font-size:.9rem; }
+  .sw button.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .tabs { display:flex; gap:8px; margin:6px 0 4px; }
+  .tabs button { margin:0; padding:10px; font-weight:600; }
+  .tabs button.active { background:var(--accent); color:#fff; }
+  .tabs button:not(.active) { background:var(--card); color:var(--fg); border:1px solid var(--muted); }
+  .mode { display:none; }
+  .mode.on { display:block; }
+  #res { margin-top:18px; padding:14px; background:var(--card); border-radius:12px; display:none; }
+  #alt { font-size:2rem; font-weight:700; }
+  #city { font-size:1.1rem; font-weight:600; margin-top:2px; }
+  .err { color:var(--err); }
+  .small { font-size:.85rem; color:var(--muted); word-break:break-all; }
+  table { width:100%; border-collapse:collapse; margin-top:12px; font-size:.95rem; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--muted); }
+  td.r { text-align:right; font-variant-numeric:tabular-nums; }
+  a { color:var(--accent); }
+  #chart { width:100%; height:auto; display:block; margin-top:14px; }
+  :root { --prof: var(--accent); }
+  .pgrid { stroke:var(--muted); opacity:.25; stroke-width:1; }
+  .ptick { stroke:var(--muted); stroke-width:1; }
+  .plab { fill:var(--muted); font-size:11px; font-family:inherit; }
+  .pline { fill:none; stroke:var(--prof); stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .parea { fill:var(--prof); opacity:.12; }
+  .pcl { stroke:var(--fg); stroke-width:1; opacity:.5; }
+  .pdot { fill:var(--prof); stroke:var(--bg); stroke-width:2; }
+  #profHover { margin-top:6px; min-height:1.4em; }
+  .stats { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-top:12px; }
+  .stats div { background:var(--card); border-radius:10px; padding:8px 10px; }
+  .stats span { display:block; font-size:.8rem; color:var(--muted); }
+  .stats b { font-size:1.05rem; font-variant-numeric:tabular-nums; }
+  #suggestions { margin-top:6px; }
+  #suggestions button { display:block; text-align:left; margin:4px 0 0; padding:8px 10px; }
+  .row2 { display:flex; gap:10px; }
+  .row2 > div { flex:1; min-width:0; }
+  .send { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-top:6px; }
+  .send button { margin-top:0; }
+  #sendMsg { min-height:1.3em; margin-top:6px; }
+  #tableN { overflow-x:auto; }
+  #tableN table { font-size:.8rem; width:auto; min-width:100%; }
+  #tableN th, #tableN td { padding:4px 7px; white-space:nowrap; }
+  #tableN th { position:sticky; top:0; background:var(--card); }
+  #tableN .zone { font-weight:700; }
+  .lg { display:inline-block; width:20px; border-top:2px solid var(--prof); vertical-align:middle; margin-right:6px; }
+  .lg2 { border-top:2px dashed var(--fg); opacity:.75; }
+  .pgps { fill:none; stroke:var(--fg); stroke-width:1.5; stroke-dasharray:5 4; opacity:.75; stroke-linejoin:round; }
+  #profLegend { margin-top:6px; }
+  #profGps { margin-top:4px; }
+  #l93res { margin-top:8px; }
+  #l93res b { font-variant-numeric:tabular-nums; }
 </style>
 </head>
-
 <body>
-<div class="page">
+<h1>Altitude <span id="paysTitre">France</span></h1>
 
-    <header>
-        <svg class="contours" viewBox="0 0 340 260" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-            <path d="M20 190 C 40 90, 140 40, 230 70 S 330 160, 280 220 S 120 250, 60 230 S 5 215, 20 190Z"/>
-            <path d="M55 185 C 70 110, 145 72, 215 92 S 296 160, 258 205 S 130 228, 88 212 S 45 205, 55 185Z"/>
-            <path d="M92 180 C 102 128, 152 104, 200 116 S 258 160, 232 192 S 140 208, 114 198 S 86 192, 92 180Z"/>
-            <path d="M128 172 C 134 148, 160 138, 186 144 S 214 164, 204 178 S 156 190, 142 184 S 124 178, 128 172Z"/>
-        </svg>
-
-        <h1>Altitude</h1>
-        <p class="baseline">
-            Connaître l’altitude d’un point en France et en Belgique.
-            <span class="nl">De hoogte van een punt kennen in Frankrijk en België.</span>
-        </p>
-    </header>
-
-    <main>
-        <h2>Choisissez votre pays <span class="nl">/ Kies uw land</span></h2>
-
-        <ul>
-            <li>
-                <a class="pays" href="France/" hreflang="fr">
-                    <span class="drapeau fr" aria-hidden="true"></span>
-                    <span class="texte">
-                        <span class="nom">France</span>
-                        <span class="detail">Français · données IGN (LiDAR HD, RGE ALTI)</span>
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a class="pays" href="Belgique/" hreflang="fr-BE">
-                    <span class="drapeau be" aria-hidden="true"></span>
-                    <span class="texte">
-                        <span class="nom">Belgique</span>
-                        <span class="detail">Français · modèles Copernicus, EU-DEM et IGN</span>
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a class="pays" href="Belgi%C3%AB/" hreflang="nl-BE">
-                    <span class="drapeau be" aria-hidden="true"></span>
-                    <span class="texte">
-                        <span class="nom">België</span>
-                        <span class="detail">Vlaams · modellen Copernicus, EU-DEM en IGN</span>
-                    </span>
-                </a>
-            </li>
-        </ul>
-    </main>
-
-    <footer>
-        <p>Sources : IGN, Copernicus, OpenStreetMap.</p>
-        <p>Bronnen: IGN, Copernicus, OpenStreetMap.</p>
-    </footer>
-
+<div class="switches">
+  <div class="sw" id="swPays" role="group" aria-label="Pays / Land">
+    <button data-pays="fr">🇫🇷 France</button>
+    <button data-pays="be">🇧🇪 België</button>
+  </div>
+  <div class="sw" id="swLang" role="group" aria-label="Langue / Taal">
+    <button data-lang="fr">FR</button>
+    <button data-lang="nl">NL</button>
+  </div>
 </div>
+
+<div class="tabs">
+  <button id="tab1" class="active" data-i18n="tab1">Un point</button>
+  <button id="tabN" data-i18n="tabN">Plusieurs points</button>
+  <button id="tabP" data-i18n="tabP">Profil</button>
+</div>
+
+<!-- ================= UN POINT ================= -->
+<div id="mode1" class="mode on">
+  <label for="addr" data-i18n="addrLabel">Chercher une adresse (optionnel)</label>
+  <input id="addr" autocomplete="off">
+  <div id="suggestions"></div>
+
+  <label for="coord" data-i18n="coordLabel">Coordonnées (copiées depuis Google Maps) — WGS 84, EPSG:4326</label>
+  <input id="coord" inputmode="text" autocomplete="off">
+
+  <p data-i18n-html="openIn">Ouvrir dans <a id="gmaps" target="_blank" rel="noopener">Google Maps</a> · <a id="amaps" target="_blank" rel="noopener">Plans (Apple)</a></p>
+
+  <label for="resource" data-i18n="srcLabel">Source</label>
+  <select id="resource"></select>
+
+  <button id="go" data-i18n="go">Obtenir l’altitude</button>
+  <button id="loc" class="sec" data-i18n="loc">Utiliser ma position actuelle</button>
+  <button id="toN" class="sec" data-i18n="toN">Ajouter à Plusieurs points</button>
+
+  <div class="send">
+    <button id="toA" class="sec" data-i18n="toA">Définir comme point A du profil</button>
+    <button id="toB" class="sec" data-i18n="toB">Définir comme point B du profil</button>
+  </div>
+  <div id="sendMsg" class="small" role="status"></div>
+
+  <button id="toL93" class="sec only-fr" data-i18n="toL93">Convertir en Lambert 93 (RGF93)</button>
+  <div id="l93res" class="small only-fr" role="status"></div>
+  <button id="copyL93" class="sec only-fr" style="display:none" data-i18n="copyL93">Copier X ; Y</button>
+
+  <div id="res">
+    <div id="alt"></div>
+    <button id="copyalt" class="sec" style="display:none" data-i18n="copyalt">Copier l’altitude</button>
+    <div id="city"></div>
+    <div id="msg"></div>
+    <div id="lidarDate" class="small only-fr"></div>
+    <div id="precision" class="small"></div>
+    <p class="small"><span data-i18n="ptLabel">Point</span> : <span id="pt"></span></p>
+    <p><a id="link" target="_blank" rel="noopener" data-i18n="openReq">Ouvrir la requête</a></p>
+  </div>
+</div>
+
+<!-- ================= PLUSIEURS POINTS ================= -->
+<div id="modeN" class="mode">
+  <label for="coordsN" data-i18n="coordsNLabel">Une coordonnée par ligne (lat, lon) — WGS 84, EPSG:4326</label>
+  <textarea id="coordsN"></textarea>
+  <input type="file" id="fileN" accept=".txt,.csv,.gpx,.kml,text/plain,text/csv,application/gpx+xml,application/vnd.google-earth.kml+xml" hidden>
+  <div class="send">
+    <button id="loadN" class="sec" data-i18n="loadN">Charger un fichier de points (.txt, .csv, .gpx ou .kml)</button>
+    <button id="clearN" class="sec" data-i18n="clearN">Vider la liste</button>
+  </div>
+  <div id="fileMsg" class="small" role="status"></div>
+  <p class="small" data-i18n="coordsNHelp"></p>
+
+  <label for="resourceN" data-i18n="srcLabel2">Source</label>
+  <select id="resourceN"></select>
+
+  <button id="goN" data-i18n="goN">Calculer les altitudes</button>
+  <button id="csv" class="sec" style="display:none" data-i18n="csvN">Exporter en CSV</button>
+  <div id="msgN"></div>
+  <div id="tableN"></div>
+</div>
+
+<!-- ================= PROFIL ================= -->
+<div id="modeP" class="mode">
+  <div class="row2">
+    <div>
+      <label for="ptA" data-i18n="ptA">Point A (lat, lon – EPSG:4326)</label>
+      <input id="ptA">
+    </div>
+    <div>
+      <label for="ptB" data-i18n="ptB">Point B (lat, lon – EPSG:4326)</label>
+      <input id="ptB">
+    </div>
+  </div>
+  <div class="row2">
+    <div>
+      <label for="resourceP" data-i18n="srcLabel3">Source</label>
+      <select id="resourceP"></select>
+    </div>
+    <div>
+      <label for="nP" data-i18n="nP">Nombre de points du profil</label>
+      <select id="nP"><option value="10" selected>10</option><option value="50">50</option><option value="100">100</option></select>
+    </div>
+  </div>
+  <button id="goP" data-i18n="goP">Tracer le profil</button>
+  <button id="swapAB" class="sec" data-i18n="swapAB">Inverser A et B</button>
+  <input type="file" id="fileP" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml" hidden>
+  <button id="loadP" class="sec" data-i18n="loadP">Tracer le profil d’une trace GPX ou KML</button>
+  <div id="msgP"></div>
+  <div id="profResult" style="display:none">
+    <svg id="chart" viewBox="0 0 640 260" role="img" aria-label="Profil altimétrique"></svg>
+    <div id="profHover" class="small"></div>
+    <div id="profLegend" class="small"></div>
+    <div id="profGps" class="small"></div>
+    <div id="profInfo" class="stats"></div>
+    <button id="csvP" class="sec" style="display:none" data-i18n="csvP">Exporter le profil en CSV</button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+// ==========================================================================
+// Pays et langue (mémorisés dans le navigateur)
+// ==========================================================================
+let PAYS = localStorage.getItem("alt_pays") || "fr";   // "fr" | "be"
+let LANG = localStorage.getItem("alt_lang") || "fr";   // "fr" | "nl"
+
+// Libellés statiques de la page
+const I18N = {
+  tab1:   { fr: "Un point",           nl: "Eén punt" },
+  tabN:   { fr: "Plusieurs points",   nl: "Meerdere punten" },
+  tabP:   { fr: "Profil",             nl: "Profiel" },
+  addrLabel: { fr: "Chercher une adresse (optionnel)", nl: "Zoek een adres (optioneel)" },
+  coordLabel: { fr: "Coordonnées (copiées depuis Google Maps) — WGS 84, EPSG:4326",
+                nl: "Coördinaten (gekopieerd uit Google Maps) — WGS 84, EPSG:4326" },
+  openIn: { fr: "Ouvrir dans <a id=\"gmaps\" target=\"_blank\" rel=\"noopener\">Google Maps</a> · <a id=\"amaps\" target=\"_blank\" rel=\"noopener\">Plans (Apple)</a>",
+            nl: "Openen in <a id=\"gmaps\" target=\"_blank\" rel=\"noopener\">Google Maps</a> · <a id=\"amaps\" target=\"_blank\" rel=\"noopener\">Kaarten (Apple)</a>" },
+  srcLabel:  { fr: "Source", nl: "Bron" },
+  srcLabel2: { fr: "Source", nl: "Bron" },
+  srcLabel3: { fr: "Source", nl: "Bron" },
+  go:     { fr: "Obtenir l’altitude",        nl: "Hoogte opvragen" },
+  loc:    { fr: "Utiliser ma position actuelle", nl: "Mijn huidige locatie gebruiken" },
+  toN:    { fr: "Ajouter à Plusieurs points", nl: "Toevoegen aan Meerdere punten" },
+  toA:    { fr: "Définir comme point A du profil", nl: "Instellen als punt A van het profiel" },
+  toB:    { fr: "Définir comme point B du profil", nl: "Instellen als punt B van het profiel" },
+  toL93:  { fr: "Convertir en Lambert 93 (RGF93)", nl: "Converteren naar Lambert 93 (RGF93)" },
+  copyL93:{ fr: "Copier X ; Y", nl: "X ; Y kopiëren" },
+  copyalt:{ fr: "Copier l’altitude", nl: "Hoogte kopiëren" },
+  ptLabel:{ fr: "Point", nl: "Punt" },
+  openReq:{ fr: "Ouvrir la requête", nl: "Verzoek openen" },
+  coordsNLabel: { fr: "Une coordonnée par ligne (lat, lon) — WGS 84, EPSG:4326",
+                  nl: "Eén coördinaat per regel (lat, lon) — WGS 84, EPSG:4326" },
+  loadN:  { fr: "Charger un fichier de points (.txt, .csv, .gpx ou .kml)", nl: "Bestand met punten laden (.txt, .csv, .gpx of .kml)" },
+  clearN: { fr: "Vider la liste", nl: "Lijst wissen" },
+  coordsNHelp: {
+    fr: "Une ligne par point : « latitude, longitude » (séparés par une virgule, un point-virgule ou une tabulation). Un fichier CSV avec les en-têtes latitude / longitude est aussi accepté, par exemple celui exporté par cette page. Un fichier GPX (trace, itinéraire ou points de passage) est aussi accepté. Un fichier KML contenant une polyligne est lu sommet par sommet. Une troisième valeur facultative sur une ligne (l’altitude du fichier GPX) est comparée à l’altitude calculée.",
+    nl: "Eén regel per punt: «breedtegraad, lengtegraad» (gescheiden door een komma, een puntkomma of een tab). Een CSV-bestand met de kolomkoppen breedtegraad / lengtegraad wordt ook aanvaard, bijvoorbeeld het bestand dat deze pagina exporteert. Een GPX-bestand (track, route of waypoints) wordt ook aanvaard. Een KML-bestand met een polylijn wordt punt per punt gelezen. Een optionele derde waarde op een regel (de hoogte uit het GPX-bestand) wordt vergeleken met de berekende hoogte." },
+  goN:    { fr: "Calculer les altitudes", nl: "Hoogtes berekenen" },
+  csvN:   { fr: "Exporter en CSV", nl: "Exporteren als CSV" },
+  ptA:    { fr: "Point A (lat, lon – EPSG:4326)", nl: "Punt A (lat, lon – EPSG:4326)" },
+  ptB:    { fr: "Point B (lat, lon – EPSG:4326)", nl: "Punt B (lat, lon – EPSG:4326)" },
+  nP:     { fr: "Nombre de points du profil", nl: "Aantal punten van het profiel" },
+  goP:    { fr: "Tracer le profil", nl: "Profiel tekenen" },
+  swapAB: { fr: "Inverser A et B", nl: "A en B omwisselen" },
+  loadP:  { fr: "Tracer le profil d’une trace GPX ou KML", nl: "Profiel van een GPX- of KML-track tekenen" },
+  csvP:   { fr: "Exporter le profil en CSV", nl: "Profiel exporteren als CSV" },
+  profilAria: { fr: "Profil altimétrique", nl: "Hoogteprofiel" },
+  titrePage:  { fr: "Altitude – France / Hoogte – Frankrijk", nl: "Hoogte – België / Altitude – Belgique" },
+};
+
+// Messages dynamiques
+const M = {
+  gpsAcc:        { fr: " (précision GPS ± ", nl: " (GPS-nauwkeurigheid ± " },
+  geolocNok:     { fr: "La localisation n’est pas disponible sur cet appareil ou ce navigateur.",
+                   nl: "Locatie is niet beschikbaar op dit toestel of in deze browser." },
+  geolocSearch:  { fr: "Recherche de la position…", nl: "Locatie wordt gezocht…" },
+  geolocDenied:  { fr: "Localisation refusée. Autorise-la pour ce site dans les réglages du navigateur, ou colle les coordonnées à la main.",
+                   nl: "Locatie geweigerd. Sta ze toe voor deze site in de instellingen van de browser, of plak de coördinaten handmatig." },
+  geolocNone:    { fr: "Position introuvable. Réessaie à l’extérieur ou colle les coordonnées à la main.",
+                   nl: "Locatie niet gevonden. Probeer het buiten opnieuw of plak de coördinaten handmatig." },
+  coordBad:      { fr: "Coordonnées non reconnues. Exemple : ", nl: "Coördinaten niet herkend. Voorbeeld: " },
+  coordBadFirst: { fr: "Coordonnées non reconnues. Saisis d’abord un point.", nl: "Coördinaten niet herkend. Geef eerst een punt in." },
+  queryingFr:    { fr: "Interrogation de l’IGN…", nl: "IGN wordt geraadpleegd…" },
+  queryingGen:   { fr: "Interrogation du service d’altitude…", nl: "Hoogtedienst wordt geraadpleegd…" },
+  multiQueryingFr:  { fr: "Interrogation de l’IGN (", nl: "IGN wordt geraadpleegd (" },
+  multiQueryingGen: { fr: "Interrogation du service d’altitude (", nl: "Hoogtedienst wordt geraadpleegd (" },
+  points:        { fr: " points)", nl: " punten)" },
+  noAlt:         { fr: "Pas d’altitude pour ce point (hors couverture de cette source). Essaie une autre source.",
+                   nl: "Geen hoogte voor dit punt (buiten het bereik van deze bron). Probeer een andere bron." },
+  readFail:      { fr: "Lecture directe impossible. Touche « Ouvrir la requête » pour voir la réponse brute, ou essaie une autre source.",
+                   nl: "Rechtstreeks lezen is niet mogelijk. Tik op «Verzoek openen» om het ruwe antwoord te zien, of probeer een andere bron." },
+  multiBadLine:  { fr: "Au moins une ligne n’est pas reconnue. Une coordonnée par ligne, ex : ",
+                   nl: "Minstens één regel wordt niet herkend. Eén coördinaat per regel, bv. " },
+  multiError:    { fr: "Erreur lors de l’interrogation du service d’altitude (réseau ou quota). Essaie une autre source.",
+                   nl: "Fout bij het raadplegen van de hoogtedienst (netwerk of quotum). Probeer een andere bron." },
+  outOfCountry:  { fr: " ⚠ Ce point semble hors de ", nl: " ⚠ Dit punt lijkt buiten " },
+  france:        { fr: "France.", nl: "Frankrijk te liggen." },
+  belgique:      { fr: "Belgique.", nl: "België te liggen." },
+  citySearch:    { fr: "Commune : recherche…", nl: "Gemeente: zoeken…" },
+  cityNone:      { fr: "Commune : aucune trouvée.", nl: "Gemeente: geen gevonden." },
+  cityNoneFr:    { fr: "Commune : aucune (hors France ou en mer).", nl: "Gemeente: geen (buiten Frankrijk of op zee)." },
+  cityFail:      { fr: "Commune : indisponible.", nl: "Gemeente: niet beschikbaar." },
+  comIgnored:    { fr: "indisponible", nl: "niet beschikbaar" },
+  lidarSearch:   { fr: "Date d’acquisition LiDAR : recherche…", nl: "LiDAR-opnamedatum: zoeken…" },
+  lidarNone:     { fr: "Date d’acquisition LiDAR : non renseignée pour ce point.", nl: "LiDAR-opnamedatum: niet ingevuld voor dit punt." },
+  lidarFail:     { fr: "Date d’acquisition LiDAR : indisponible.", nl: "LiDAR-opnamedatum: niet beschikbaar." },
+  lidarOne:      { fr: "Acquisition LiDAR : ", nl: "LiDAR-opname: " },
+  lidarFrom:     { fr: "Acquisition LiDAR : du ", nl: "LiDAR-opname: van " },
+  lidarTo:       { fr: " au ", nl: " tot " },
+  l93Title:      { fr: "RGF93 v1 / Lambert 93 (EPSG:2154)", nl: "RGF93 v1 / Lambert 93 (EPSG:2154)" },
+  l93X:          { fr: "X (Est) : ", nl: "X (oost): " },
+  l93Y:          { fr: "Y (Nord) : ", nl: "Y (noord): " },
+  l93Outside:    { fr: "⚠ Ce point est hors de la France métropolitaine : le Lambert 93 n’y est pas défini avec précision.",
+                   nl: "⚠ Dit punt ligt buiten Europees Frankrijk: Lambert 93 is er niet nauwkeurig gedefinieerd." },
+  zonesUsed:     { fr: "Zones CC utilisées :", nl: "Gebruikte CC-zones:" },
+  zonePoint:     { fr: " points)", nl: " punten)" },
+  zonePoint1:    { fr: " point)", nl: " punt)" },
+  tableCaption:  { fr: "Latitude et longitude : WGS 84 (EPSG:4326). X (Est) et Y (Nord) : RGF93 / Lambert 93 (EPSG:2154). X et Y CC : RGF93, conique conforme CC42 à CC50 (EPSG:3942 à 3950), zone choisie automatiquement selon la latitude.",
+                   nl: "Breedte- en lengtegraad: WGS 84 (EPSG:4326). X (oost) en Y (noord): RGF93 / Lambert 93 (EPSG:2154). X en Y CC: RGF93, conische conforme zones CC42 tot CC50 (EPSG:3942 tot 3950), zone automatisch gekozen volgens de breedtegraad." },
+  comOmitted:    { fr: "Plus de 20 points : la colonne Commune est omise.", nl: "Meer dan 20 punten: de kolom Gemeente wordt weggelaten." },
+  th: { ligne: {fr:"#", nl:"#"}, lat: {fr:"Latitude", nl:"Breedtegraad"}, lon: {fr:"Longitude", nl:"Lengtegraad"},
+        alt: {fr:"Altitude", nl:"Hoogte"}, com: {fr:"Commune", nl:"Gemeente"}, kaart: {fr:"Carte", nl:"Kaart"},
+        plans: {fr:"Plans", nl:"Kaarten"}, maps: {fr:"Maps", nl:"Maps"} },
+  csv: { regel: {fr:"ligne", nl:"regel"}, lat: {fr:"latitude", nl:"breedtegraad"}, lon: {fr:"longitude", nl:"lengtegraad"},
+         alt: {fr:"altitude_m", nl:"hoogte_m"}, gpx: {fr:"altitude_gpx_m", nl:"hoogte_gps_m"}, ecart: {fr:"ecart_m", nl:"verschil_m"},
+         xl93: {fr:"x_lambert93_m", nl:"x_lambert93_m"}, yl93: {fr:"y_lambert93_m", nl:"y_lambert93_m"},
+         zcc: {fr:"zone_cc", nl:"zone_cc"}, xcc: {fr:"x_cc_m", nl:"x_cc_m"}, ycc: {fr:"y_cc_m", nl:"y_cc_m"} },
+  csvName:  { fr: "altitudes.csv", nl: "hoogtes.csv" },
+  profName: { fr: "profil-altimetrique.csv", nl: "hoogteprofiel.csv" },
+  sendT: {
+    bad:  { fr: "Coordonnées non reconnues. Saisis d’abord un point.", nl: "Coördinaten niet herkend. Geef eerst een punt in." },
+    dup:  { fr: "Ce point est déjà dans « Plusieurs points ».", nl: "Dit punt staat al in «Meerdere punten»." },
+    added:{ fr: n => "Point ajouté à « Plusieurs points » (" + n + (n > 1 ? " points" : " point") + " au total).",
+            nl: n => "Punt toegevoegd aan «Meerdere punten» (" + n + (n > 1 ? " punten" : " punt") + " in totaal)." },
+    seta: { fr: "Point A du profil défini.", nl: "Punt A van het profiel ingesteld." },
+    setb: { fr: "Point B du profil défini.", nl: "Punt B van het profiel ingesteld." } },
+  fileT: {
+    thin: { fr: (n, m) => "Trace réduite de " + n + " à " + m + " points (échantillonnage régulier).",
+            nl: (n, m) => "Track teruggebracht van " + n + " naar " + m + " punten (regelmatige bemonstering)." },
+    none: { fr: "Aucun point reconnu dans ce fichier.", nl: "Geen punten herkend in dit bestand." },
+    err:  { fr: "Lecture du fichier impossible.", nl: "Het bestand kon niet gelezen worden." },
+    cap:  { fr: "Fichier limité aux 1000 premiers points.", nl: "Bestand beperkt tot de eerste 1000 punten." },
+    added:{ fr: (n, s) => n + (n > 1 ? " points ajoutés" : " point ajouté") + (s ? " (" + s + (s > 1 ? " lignes ignorées" : " ligne ignorée") + ")" : "") + ".",
+            nl: (n, s) => n + (n > 1 ? " punten toegevoegd" : " punt toegevoegd") + (s ? " (" + s + (s > 1 ? " regels genegeerd" : " regel genegeerd") + ")" : "") + "." } },
+  ELE: {
+    gpx: { fr: "Altitude GPX", nl: "Hoogte GPX" },
+    diff:{ fr: "Écart", nl: "Verschil" },
+    summary: {
+      fr: (mean, abs, n) => "Sur " + n + (n > 1 ? " points" : " point") + " avec altitude GPX : écart moyen " + sg(mean) + ", écart absolu moyen " + abs.toFixed(1) + " m (GPX − source).",
+      nl: (mean, abs, n) => "Over " + n + (n > 1 ? " punten" : " punt") + " met GPX-hoogte: gemiddeld verschil " + sg(mean) + ", gemiddeld absoluut verschil " + abs.toFixed(1) + " m (GPX − bron)." } },
+  PROF: {
+    hint:      { fr: "Touchez ou survolez la courbe pour lire l’altitude.", nl: "Tik of beweeg over de curve om de hoogte af te lezen." },
+    hoverD:    { fr: "Distance", nl: "Afstand" },
+    hoverZ:    { fr: "Altitude", nl: "Hoogte" },
+    noPoint:   { fr: "pas de données", nl: "geen gegevens" },
+    noTrack:   { fr: "Aucune trace trouvée dans ce fichier (GPX : trace ou itinéraire ; KML : polyligne ; au moins 2 points).",
+                 nl: "Geen track gevonden in dit bestand (GPX: track of route; KML: polylijn; minstens 2 punten)." },
+    fileErr:   { fr: "Lecture du fichier impossible.", nl: "Het bestand kon niet gelezen worden." },
+    srcLabel:  { fr: "Source choisie", nl: "Gekozen bron" },
+    gpsLabel:  { fr: "Altitude GPX (appareil)", nl: "GPX-hoogte (toestel)" },
+    badCoords: { fr: "Coordonnées A ou B non reconnues.", nl: "Coördinaten A of B niet herkend." },
+    samePoint: { fr: "Les points A et B sont identiques.", nl: "Punt A en B zijn identiek." },
+    computing: { fr: n => "Calcul du profil (" + n + " points)…", nl: n => "Profiel wordt berekend (" + n + " punten)…" },
+    noData:    { fr: "Pas de données pour ce tracé (hors couverture).", nl: "Geen gegevens voor dit traject (buiten het bereik)." },
+    error:     { fr: "Erreur lors de l’interrogation du service d’altitude (réseau ou quota).", nl: "Fout bij het raadplegen van de hoogtedienst (netwerk of quotum)." },
+    stats: {
+      dist:  { fr: "Distance", nl: "Afstand" },
+      pente: { fr: "Pente moyenne", nl: "Gemiddelde helling" },
+      start: { fr: "Départ", nl: "Start" },
+      end:   { fr: "Arrivée", nl: "Aankomst" },
+      min:   { fr: "Minimum", nl: "Minimum" },
+      max:   { fr: "Maximum", nl: "Maximum" },
+      up:    { fr: "Montée cumulée", nl: "Totale stijging" },
+      down:  { fr: "Descente cumulée", nl: "Totale daling" } } },
+};
+
+// Renvoie le texte dans la langue courante (objet {fr, nl}, valeur ou fonction)
+function t(o, ...args) { const v = o[LANG]; return typeof v === "function" ? v(...args) : v; }
+function tK(key, ...args) { return t(I18N[key], ...args); }
+
+// Exemples de coordonnées selon le pays
+const EX = { fr: { pt: "46.7256825, -1.5683537", b: "46.7510, -1.5900", multi: "46.7256825, -1.5683537\n46.7301, -1.5742\n46.7185, -1.5601", addr: "ex : 12 rue de la Paix, La Roche-sur-Yon" },
+             be: { pt: "50.8467, 4.3525", b: "50.8798, 4.4301", multi: "50.8467, 4.3525\n50.4674, 4.8720\n50.6326, 5.5797", addr: "bv. Grote Markt 1, Brussel" } };
+
+function applyLang() {
+  document.documentElement.lang = LANG === "fr" ? "fr" : "nl-BE";
+  document.title = tK("titrePage");
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = tK(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = tK(el.dataset.i18nHtml); });
+  $("chart").setAttribute("aria-label", tK("profilAria"));
+  $("paysTitre").textContent = PAYS === "fr" ? "France" : "België";
+  document.querySelectorAll("#swLang button").forEach(b => b.classList.toggle("active", b.dataset.lang === LANG));
+  document.querySelectorAll("#swPays button").forEach(b => b.classList.toggle("active", b.dataset.pays === PAYS));
+  fillSources();
+  applyCountryPlaceholders();
+}
+function applyCountryPlaceholders() {
+  const ex = EX[PAYS];
+  $("coord").placeholder = ex.pt;
+  $("ptA").placeholder = ex.pt;
+  $("ptB").placeholder = ex.b;
+  $("coordsN").placeholder = ex.multi;
+  $("addr").placeholder = ex.addr;
+}
+function setPays(p) {
+  PAYS = p; localStorage.setItem("alt_pays", p);
+  // Blocs propres à la France (Lambert 93 / CC, date LiDAR)
+  document.querySelectorAll(".only-fr").forEach(el => el.style.display = p === "fr" ? "" : "none");
+  applyLang();
+}
+document.querySelectorAll("#swPays button").forEach(b => b.addEventListener("click", () => setPays(b.dataset.pays)));
+document.querySelectorAll("#swLang button").forEach(b => b.addEventListener("click", () => { LANG = b.dataset.lang; localStorage.setItem("alt_lang", LANG); applyLang(); }));
+
+// --- Onglets ---
+const tabs = { tab1:"mode1", tabN:"modeN", tabP:"modeP" };
+for (const t2 of Object.keys(tabs)) $(t2).addEventListener("click", () => {
+  for (const k of Object.keys(tabs)) {
+    $(k).classList.toggle("active", k === t2);
+    $(tabs[k]).classList.toggle("on", k === t2);
+  }
+});
+
+function num(s) { return parseFloat(String(s).replace(",", ".")); }
+function frDay(iso) { return iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(0, 4); }
+function isoDay(s) { const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[0] : null; }
+
+// Liens Google Maps / Plans (Apple) pour le point courant
+function setMapLinks(lat, lon) {
+  const q = lat.toFixed(7) + "," + lon.toFixed(7);
+  $("gmaps").href = "https://www.google.com/maps?q=" + q;
+  // S'ouvre dans Plans sur iPhone/iPad/Mac, Google Maps sur Android
+  $("amaps").href = "https://maps.apple.com/?q=" + q;
+}
+// Sans coordonnées valides, les liens restent actifs et ouvrent simplement l'application de cartes
+function clearMapLinks() {
+  $("gmaps").href = "https://www.google.com/maps";
+  $("amaps").href = "https://maps.apple.com/";
+}
+// Liens mis à jour en direct dès que les coordonnées sont reconnues
+function updateMapLinksFromInput() {
+  const p = parse($("coord").value);
+  if (p && !isNaN(p.lat) && !isNaN(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180) setMapLinks(p.lat, p.lon);
+  else clearMapLinks();
+}
+$("coord").addEventListener("input", updateMapLinksFromInput);
+
+// ==========================================================================
+// Sources d'altitude, selon le pays.
+// Chaque source sait construire son URL, lire la réponse et dit combien de points elle accepte par requête.
+// ==========================================================================
+const SOURCES = {
+  fr: {
+    ign_lidar_hd_mnt_mono_wld: {
+      label: { fr: "MNT LiDAR HD (avec interpolation)", nl: "DTM LiDAR HD (geïnterpoleerd)" },
+      precision: { fr: "Précision verticale indicative : ±0,20 m (LiDAR HD)", nl: "Indicatieve verticale nauwkeurigheid: ±0,20 m (LiDAR HD)" },
+      max: 50, delay: 0,
+      url: pts => BASE_IGN + "?lon=" + pts.map(p => p.lon.toFixed(7)).join("|") +
+                  "&lat=" + pts.map(p => p.lat.toFixed(7)).join("|") + "&resource=ign_lidar_hd_mnt_mono_wld&zonly=true",
+      read: j => j.elevations || []
+    },
+    ign_lidar_hd_mnt_multi_wld: {
+      label: { fr: "MNT LiDAR HD (sans interpolation)", nl: "DTM LiDAR HD (ongeïnterpoleerd)" },
+      precision: { fr: "Précision verticale indicative : ±0,20 m (LiDAR HD)", nl: "Indicatieve verticale nauwkeurigheid: ±0,20 m (LiDAR HD)" },
+      max: 50, delay: 0,
+      url: pts => BASE_IGN + "?lon=" + pts.map(p => p.lon.toFixed(7)).join("|") +
+                  "&lat=" + pts.map(p => p.lat.toFixed(7)).join("|") + "&resource=ign_lidar_hd_mnt_multi_wld&zonly=true",
+      read: j => j.elevations || []
+    },
+    ign_rge_alti_wld: {
+      label: { fr: "RGE ALTI", nl: "RGE ALTI" },
+      precision: { fr: "Précision verticale indicative : ±0,50 m (plat) à ±3 m (forte pente) (RGE ALTI)",
+                   nl: "Indicatieve verticale nauwkeurigheid: ±0,50 m (vlak) tot ±3 m (steile helling) (RGE ALTI)" },
+      max: 50, delay: 0,
+      url: pts => BASE_IGN + "?lon=" + pts.map(p => p.lon.toFixed(7)).join("|") +
+                  "&lat=" + pts.map(p => p.lat.toFixed(7)).join("|") + "&resource=ign_rge_alti_wld&zonly=true",
+      read: j => j.elevations || []
+    }
+  },
+  be: {
+    openmeteo: {
+      label: { fr: "Copernicus GLO-90 via Open-Meteo (≈ 90 m)", nl: "Copernicus GLO-90 via Open-Meteo (≈ 90 m)" },
+      precision: { fr: "Résolution ≈ 90 m (Copernicus DEM). Précision verticale de quelques mètres : à utiliser pour un ordre de grandeur.",
+                   nl: "Resolutie ≈ 90 m (Copernicus DEM). Verticale nauwkeurigheid van enkele meters: bruikbaar als orde van grootte." },
+      max: 100, delay: 0,
+      url: pts => "https://api.open-meteo.com/v1/elevation?latitude=" + pts.map(p => p.lat.toFixed(6)).join(",") +
+                  "&longitude=" + pts.map(p => p.lon.toFixed(6)).join(","),
+      read: j => j.elevation || []
+    },
+    eudem: {
+      label: { fr: "EU-DEM 25 m via OpenTopoData", nl: "EU-DEM 25 m via OpenTopoData" },
+      precision: { fr: "Résolution 25 m (EU-DEM v1.1). Précision verticale d’environ ±7 m.",
+                   nl: "Resolutie 25 m (EU-DEM v1.1). Verticale nauwkeurigheid van ongeveer ±7 m." },
+      max: 100, delay: 1100,
+      url: pts => "https://api.opentopodata.org/v1/eudem25m?locations=" +
+                  pts.map(p => p.lat.toFixed(6) + "," + p.lon.toFixed(6)).join("|"),
+      read: j => (j.results || []).map(r => r.elevation)
+    },
+    ign: {
+      label: { fr: "IGN (monde) — précision variable hors de France", nl: "IGN (wereldwijd) — wisselende nauwkeurigheid buiten Frankrijk" },
+      precision: { fr: "Service IGN mondial : la précision dépend de la zone et peut être faible en Belgique (meilleure près de la frontière française).",
+                   nl: "Wereldwijde IGN-dienst: de nauwkeurigheid hangt af van het gebied en kan laag zijn in België (beter nabij de Franse grens)." },
+      max: 50, delay: 0,
+      url: pts => BASE_IGN + "?lon=" + pts.map(p => p.lon.toFixed(7)).join("|") +
+                  "&lat=" + pts.map(p => p.lat.toFixed(7)).join("|") + "&resource=ign_rge_alti_wld&zonly=true",
+      read: j => j.elevations || []
+    }
+  }
+};
+const BASE_IGN = "https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json";
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function fillSources() {
+  const srcs = SOURCES[PAYS];
+  for (const id of ["resource", "resourceN", "resourceP"]) {
+    const sel = $(id), cur = sel.value;
+    sel.innerHTML = Object.entries(srcs).map(([k, s]) => '<option value="' + k + '">' + t(s.label) + '</option>').join("");
+    if (cur && srcs[cur]) sel.value = cur;
+  }
+}
+
+async function getElevations(pts, key) {
+  const s = SOURCES[PAYS][key], out = [];
+  for (let i = 0; i < pts.length; i += s.max) {
+    if (i && s.delay) await sleep(s.delay);
+    const r = await fetch(s.url(pts.slice(i, i + s.max)));
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    s.read(j).forEach(z => out.push(typeof z === "number" && z > -9990 ? z : null));
+  }
+  return out;
+}
+
+function inCountry(p) {
+  return PAYS === "fr"
+    ? (p.lat >= 41 && p.lat <= 51.5 && p.lon >= -5.5 && p.lon <= 10)
+    : (p.lat >= 49.45 && p.lat <= 51.55 && p.lon >= 2.5 && p.lon <= 6.45);
+}
+
+// --- Date d'acquisition du LiDAR HD (France : métadonnées des dalles, WFS Géoplateforme) ---
+const WFS = "https://data.geopf.fr/wfs/ows";
+const META_LAYER = "IGNF_LIDAR-HD_METADONNEE:metadata";
+let dateToken = 0;
+
+function findProp(props, re) {
+  let nested = props.metadata;
+  if (typeof nested === "string") { try { nested = JSON.parse(nested); } catch (e) { nested = null; } }
+  for (const o of [props, nested]) {
+    if (!o || typeof o !== "object") continue;
+    for (const k of Object.keys(o)) { if (re.test(k) && o[k]) return o[k]; }
+  }
+  return null;
+}
+
+async function lidarDates(lat, lon) {
+  const e = 0.00001;
+  const bbox = [lat - e, lon - e, lat + e, lon + e].map(v => v.toFixed(7)).join(",") + ",urn:ogc:def:crs:EPSG::4326";
+  const url = WFS + "?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=" + encodeURIComponent(META_LAYER) +
+              "&OUTPUTFORMAT=application%2Fjson&COUNT=10&BBOX=" + bbox;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const j = await r.json();
+  const deb = [], fin = [];
+  for (const f of (j.features || [])) {
+    const p = f.properties || {};
+    const d = isoDay(findProp(p, /debut.*acquisition|acquisition.*debut/i));
+    const g = isoDay(findProp(p, /fin.*acquisition|acquisition.*fin/i));
+    if (d) deb.push(d);
+    if (g) fin.push(g);
+  }
+  if (!deb.length && !fin.length) return null;
+  const all = deb.concat(fin).sort();
+  return { debut: (deb.length ? deb.slice().sort()[0] : all[0]), fin: (fin.length ? fin.slice().sort().pop() : all[all.length - 1]) };
+}
+
+async function showDate(p, resource) {
+  if (PAYS !== "fr") { $("lidarDate").textContent = ""; return; }
+  const el = $("lidarDate"), tok = ++dateToken;
+  if (!resource.startsWith("ign_lidar_hd")) { el.textContent = ""; return; }
+  el.textContent = t(M.lidarSearch);
+  try {
+    const d = await lidarDates(p.lat, p.lon);
+    if (tok !== dateToken) return;
+    if (!d) { el.textContent = t(M.lidarNone); return; }
+    el.textContent = d.debut === d.fin
+      ? t(M.lidarOne) + frDay(d.debut)
+      : t(M.lidarFrom) + frDay(d.debut) + t(M.lidarTo) + frDay(d.fin);
+  } catch (err) {
+    if (tok === dateToken) el.textContent = t(M.lidarFail);
+  }
+}
+
+// --- Commune du point : France (geo.api.gouv.fr) ou Belgique (Nominatim / OpenStreetMap) ---
+let cityToken = 0;
+
+async function cityOf(p) {
+  if (PAYS === "fr") {
+    const r = await fetch("https://geo.api.gouv.fr/communes?lat=" + p.lat.toFixed(7) + "&lon=" + p.lon.toFixed(7) +
+                          "&fields=nom,codesPostaux,departement&format=json");
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    if (!j.length) return null;
+    const c = j[0];
+    return { nom: c.nom, cp: c.codesPostaux && c.codesPostaux.length === 1 ? c.codesPostaux[0] : "",
+             region: c.departement ? c.departement.nom : "" };
+  }
+  const r = await fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1&accept-language=" +
+                        LANG + "&lat=" + p.lat.toFixed(7) + "&lon=" + p.lon.toFixed(7));
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const j = await r.json();
+  const a = j.address;
+  if (!a) return null;
+  const nom = a.municipality || a.city || a.town || a.village || a.county || null;
+  if (!nom) return null;
+  return { nom, cp: a.postcode || "", region: a.state || "" };
+}
+
+async function showCity(p) {
+  const el = $("city"), tok = ++cityToken;
+  el.textContent = t(M.citySearch);
+  try {
+    const c = await cityOf(p);
+    if (tok !== cityToken) return;
+    if (!c) { el.textContent = PAYS === "fr" ? t(M.cityNoneFr) : t(M.cityNone); return; }
+    el.textContent = c.nom + (c.cp ? " (" + c.cp + ")" : "") + (c.region ? ", " + c.region : "");
+  } catch (err) {
+    if (tok === cityToken) el.textContent = t(M.cityFail);
+  }
+}
+
+// Accepte « 46.7256825, -1.5683537 » ou « 46°42'59.5"N 1°34'08.2"W »
+function parse(s) {
+  s = String(s || "").trim();
+  if (!s) return null;
+  if (s.includes("°")) {
+    const re = /(\d+(?:[.,]\d+)?)\s*°\s*(?:(\d+(?:[.,]\d+)?)\s*['’′]\s*)?(?:(\d+(?:[.,]\d+)?)\s*(?:"|”|″|'')\s*)?([NSEWO])/gi;
+    let m, lat = null, lon = null;
+    while ((m = re.exec(s)) !== null) {
+      let v = num(m[1]) + (m[2] ? num(m[2]) / 60 : 0) + (m[3] ? num(m[3]) / 3600 : 0);
+      const h = m[4].toUpperCase();
+      if (h === "S" || h === "W" || h === "O") v = -v;
+      if (h === "N" || h === "S") lat = v; else lon = v;
+    }
+    if (lat === null || lon === null) return null;
+    return { lat, lon };
+  }
+  const n = s.match(/-?\d+(?:[.,]\d+)?/g);
+  if (!n || n.length < 2) return null;
+  return { lat: num(n[0]), lon: num(n[1]) };
+}
+
+let accText = "";
+
+// --- Recherche d'adresse : France (API adresse data.gouv.fr) ou Belgique (Nominatim) ---
+let sugToken = 0;
+$("addr").addEventListener("input", async () => {
+  const q = $("addr").value.trim(), box = $("suggestions"), tok = ++sugToken;
+  if (q.length < 3) { box.innerHTML = ""; return; }
+  try {
+    if (PAYS === "fr") {
+      const r = await fetch("https://api-adresse.data.gouv.fr/search/?q=" + encodeURIComponent(q) + "&limit=4");
+      const j = await r.json();
+      if (tok !== sugToken) return;
+      box.innerHTML = "";
+      for (const f of (j.features || [])) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = f.properties.label;
+        b.addEventListener("click", () => {
+          const [lon, lat] = f.geometry.coordinates;
+          $("coord").value = lat.toFixed(7) + ", " + lon.toFixed(7);
+          $("addr").value = f.properties.label;
+          box.innerHTML = "";
+          updateMapLinksFromInput();
+        });
+        box.appendChild(b);
+      }
+    } else {
+      const r = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=be&limit=4&accept-language=" +
+                            LANG + "&q=" + encodeURIComponent(q));
+      const j = await r.json();
+      if (tok !== sugToken) return;
+      box.innerHTML = "";
+      for (const f of j) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = f.display_name;
+        b.addEventListener("click", () => {
+          $("coord").value = parseFloat(f.lat).toFixed(7) + ", " + parseFloat(f.lon).toFixed(7);
+          $("addr").value = f.display_name;
+          box.innerHTML = "";
+          updateMapLinksFromInput();
+        });
+        box.appendChild(b);
+      }
+    }
+  } catch (e) { if (tok === sugToken) box.innerHTML = ""; }
+});
+
+// --- Mode un point ---
+$("loc").addEventListener("click", () => {
+  const box = $("res"), msg = $("msg");
+  const fail = t2 => { box.style.display = "block"; $("alt").textContent = ""; $("lidarDate").textContent = ""; $("city").textContent = ""; msg.className = "err"; msg.textContent = t2;
+                      $("pt").textContent = ""; $("link").removeAttribute("href"); clearMapLinks(); };
+  if (!navigator.geolocation) { fail(t(M.geolocNok)); return; }
+  box.style.display = "block"; $("alt").textContent = ""; msg.className = ""; msg.textContent = t(M.geolocSearch);
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      $("coord").value = pos.coords.latitude.toFixed(7) + ", " + pos.coords.longitude.toFixed(7);
+      accText = t(M.gpsAcc) + Math.round(pos.coords.accuracy) + " m)";
+      $("go").click();
+    },
+    err => fail(err.code === 1 ? t(M.geolocDenied) : t(M.geolocNone)),
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+  );
+});
+
+$("go").addEventListener("click", async () => {
+  const box = $("res"), alt = $("alt"), msg = $("msg");
+  box.style.display = "block"; alt.textContent = ""; msg.textContent = ""; msg.className = "";
+  $("copyalt").style.display = "none";
+  dateToken++; $("lidarDate").textContent = "";
+  cityToken++; $("city").textContent = "";
+  const p = parse($("coord").value);
+  if (!p || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180 || isNaN(p.lat) || isNaN(p.lon)) {
+    msg.className = "err"; msg.textContent = t(M.coordBad) + EX[PAYS].pt;
+    $("pt").textContent = ""; $("link").removeAttribute("href"); clearMapLinks(); return;
+  }
+  const key = $("resource").value, src = SOURCES[PAYS][key];
+  $("pt").textContent = "lat " + p.lat.toFixed(7) + ", lon " + p.lon.toFixed(7) + accText;
+  accText = "";
+  $("link").href = src.url([p]);
+  setMapLinks(p.lat, p.lon);
+  $("precision").textContent = t(src.precision) + (inCountry(p) ? "" : t(M.outOfCountry) + (PAYS === "fr" ? t(M.france) : t(M.belgique)));
+  showCity(p);
+  msg.textContent = PAYS === "fr" ? t(M.queryingFr) : t(M.queryingGen);
+  try {
+    const z = (await getElevations([p], key))[0];
+    if (typeof z === "number") {
+      alt.textContent = z.toFixed(2) + " m";
+      $("copyalt").style.display = "block";
+      msg.textContent = "";
+      showDate(p, key);
+    } else {
+      msg.className = "err";
+      msg.textContent = t(M.noAlt);
+    }
+  } catch (e) {
+    msg.className = "err";
+    msg.textContent = t(M.readFail);
+  }
+});
+
+$("copyalt").addEventListener("click", () => navigator.clipboard.writeText($("alt").textContent.replace(" m", "").trim()));
+
+// --- Mode plusieurs points ---
+let lastMulti = [];
+let renderToken = 0;
+/*__SUITE__*/
+
+// Sommets d'une polyligne KML (LineString, ou gx:Track). Attention : KML écrit « longitude,latitude,altitude ».
+function kmlVertices(text) {
+  const doc = new DOMParser().parseFromString(text, "application/xml");
+  if (doc.getElementsByTagName("parsererror").length) return null;
+  let tokens = [];
+  for (const n of doc.getElementsByTagName("LineString")) {
+    const c = n.getElementsByTagName("coordinates")[0];
+    if (c) tokens = tokens.concat(c.textContent.trim().split(/\s+/));
+  }
+  if (!tokens.length) for (const n of doc.getElementsByTagName("gx:coord")) tokens.push(n.textContent.trim().split(/\s+/).join(","));
+  if (!tokens.length) for (const n of doc.getElementsByTagName("Point")) {
+    const c = n.getElementsByTagName("coordinates")[0];
+    if (c) tokens.push(c.textContent.trim());
+  }
+  const pts = []; let skipped = 0;
+  for (const t2 of tokens) {
+    if (!t2) continue;
+    const f = t2.split(",");
+    const p = { lon: parseFloat(f[0]), lat: parseFloat(f[1]), ele: f.length > 2 ? parseFloat(f[2]) : NaN };
+    if (isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180) skipped++; else pts.push(p);
+  }
+  // Une altitude toujours à 0 est un simple remplissage (tracé « collé au sol »), pas une mesure
+  if (pts.every(p => isNaN(p.ele) || p.ele === 0)) pts.forEach(p => { p.ele = NaN; });
+  return { pts, skipped };
+}
+
+const sg = d => (d > 0 ? "+" : d < 0 ? "−" : "") + Math.abs(d).toFixed(1) + " m";
+// Une ligne peut porter une 3e valeur : l'altitude relevée par l'appareil (fichier GPX), comparée à l'altitude calculée
+function lineEle(l) {
+  if (l.includes("°")) return null;
+  const n = l.match(/-?\d+(?:[.,]\d+)?/g);
+  return n && n.length >= 3 ? num(n[2]) : null;
+}
+const hasEle = () => lastMulti.some(p => p.ele != null && !isNaN(p.ele));
+const diffOf = p => (p.ele != null && !isNaN(p.ele) && p.z != null && p.z > -99990) ? p.ele - p.z : null;
+const eleHead = () => hasEle() ? "<th>" + t(M.ELE.gpx) + "</th><th>" + t(M.ELE.diff) + "</th>" : "";
+function eleCells(p) {
+  if (!hasEle()) return "";
+  const d = diffOf(p);
+  return "<td class='r'>" + (p.ele != null && !isNaN(p.ele) ? p.ele.toFixed(1) + " m" : "—") + "</td><td class='r'>" + (d !== null ? sg(d) : "—") + "</td>";
+}
+function eleSummary() {
+  if (!hasEle()) return "";
+  const ds = lastMulti.map(diffOf).filter(d => d !== null);
+  if (!ds.length) return "";
+  const mean = ds.reduce((s, d) => s + d, 0) / ds.length, abs = ds.reduce((s, d) => s + Math.abs(d), 0) / ds.length;
+  return "<p class='small'>" + t(M.ELE.summary, mean, abs, ds.length) + "</p>";
+}
+
+$("goN").addEventListener("click", async () => {
+  const msg = $("msgN");
+  msg.textContent = ""; msg.className = "";
+  const lines = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
+  const pts = lines.map(parse);
+  const eles = lines.map(lineEle);
+  if (!pts.length || pts.some(p => !p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180)) {
+    msg.className = "err"; msg.textContent = t(M.multiBadLine) + EX[PAYS].pt;
+    return;
+  }
+  msg.textContent = (PAYS === "fr" ? t(M.multiQueryingFr) : t(M.multiQueryingGen)) + pts.length + t(M.points);
+  try {
+    const zs = await getElevations(pts, $("resourceN").value);
+    lastMulti = pts.map((p, i) => ({ ...p, z: zs[i], ligne: i + 1, ele: eles[i] }));
+    msg.textContent = "";
+    $("csv").style.display = "block";
+    renderMulti();
+  } catch (e) {
+    msg.className = "err";
+    msg.textContent = t(M.multiError);
+  }
+});
+
+async function renderMulti() {
+  const tok = ++renderToken, tbl = $("tableN");
+  const fr = PAYS === "fr";
+  const withCity = fr || lastMulti.length <= 20;   // Nominatim (BE) limite à ~1 requête/s
+  const colCC = fr;
+  let html = "<table><tr><th>" + t(M.th.ligne) + "</th><th>" + t(M.th.lat) + "</th><th>" + t(M.th.lon) + "</th><th>" + t(M.th.alt) + "</th>" + eleHead() +
+             (colCC ? "<th>X L93 (m)</th><th>Y L93 (m)</th><th>Zone CC</th><th>X CC (m)</th><th>Y CC (m)</th>" : "") +
+             (withCity ? "<th>" + t(M.th.com) + "</th>" : "") + "<th>" + t(M.th.kaart) + "</th></tr>";
+  for (const p of lastMulti) {
+    const q = p.lat.toFixed(7) + "," + p.lon.toFixed(7);
+    let middle = "";
+    if (colCC) {
+      const l93 = toLambert93(p.lat, p.lon);
+      const ccz = ccZone(p.lat), cc = toCC(p.lat, p.lon, ccz);
+      middle = "<td class='r'>" + l93.x.toFixed(2) + "</td><td class='r'>" + l93.y.toFixed(2) + "</td>" +
+               "<td class='zone'>CC" + ccz + "</td><td class='r'>" + cc.x.toFixed(2) + "</td><td class='r'>" + cc.y.toFixed(2) + "</td>";
+    }
+    html += "<tr><td>" + p.ligne + "</td><td>" + p.lat.toFixed(6) + "</td><td>" + p.lon.toFixed(6) + "</td><td class='r'>" +
+            (p.z != null && p.z > -99990 ? p.z.toFixed(2) + " m" : "—") + "</td>" + eleCells(p) + middle +
+            (withCity ? "<td id='com" + p.ligne + "'>…</td>" : "") +
+            "<td><a target=\"_blank\" rel=\"noopener\" href=\"https://maps.apple.com/?q=" + q + "\">" + t(M.th.plans) + "</a> · " +
+            "<a target=\"_blank\" rel=\"noopener\" href=\"https://www.google.com/maps?q=" + q + "\">" + t(M.th.maps) + "</a></td></tr>";
+  }
+  html += "</table>";
+  if (colCC) {
+    const zones = {};
+    lastMulti.forEach(p => { const z = "CC" + ccZone(p.lat); zones[z] = (zones[z] || 0) + 1; });
+    html += "<p class='small'><b>" + t(M.zonesUsed) + "</b> " +
+            Object.keys(zones).sort().map(z => "<b class='zone'>" + z + "</b> (" + zones[z] + (zones[z] > 1 ? t(M.zonePoint) : t(M.zonePoint1))).join(" · ") + "</p>";
+    html += "<p class='small'>" + t(M.tableCaption) + "</p>";
+  }
+  html += "<p class='small'>" + (PAYS === "fr"
+    ? "Latitude et longitude : WGS 84 (EPSG:4326)."
+    : (LANG === "fr" ? "Latitude et longitude : WGS 84 (EPSG:4326)." : "Breedte- en lengtegraad: WGS 84 (EPSG:4326).")) + "</p>";
+  if (!withCity) html += "<p class='small'>" + t(M.comOmitted) + "</p>";
+  html += eleSummary();
+  tbl.innerHTML = html;
+  // Communes lues après coup (Belgique : Nominatim limite à ~1 requête/seconde)
+  if (withCity) {
+    for (const p of lastMulti) {
+      if (tok !== renderToken) return;
+      let com = "";
+      try { const c = await cityOf(p); com = c ? c.nom : ""; } catch (e) { com = t(M.comIgnored); }
+      const cell = $("com" + p.ligne);
+      if (cell) cell.textContent = com;
+      if (PAYS !== "fr") await sleep(1100);
+    }
+  }
+}
+
+$("csv").addEventListener("click", () => {
+  const fr = PAYS === "fr";
+  const rows = [[t(M.csv.regel), t(M.csv.lat), t(M.csv.lon), t(M.csv.alt)]];
+  if (fr) rows[0].push(t(M.csv.xl93), t(M.csv.yl93), t(M.csv.zcc), t(M.csv.xcc), t(M.csv.ycc));
+  for (const p of lastMulti) {
+    const row = [p.ligne, p.lat, p.lon, p.z != null && p.z > -99990 ? p.z.toFixed(2) : ""];
+    if (fr) {
+      const r = toLambert93(p.lat, p.lon);
+      const z = ccZone(p.lat), c = toCC(p.lat, p.lon, z);
+      row.push(r.x.toFixed(2), r.y.toFixed(2), "CC" + z, c.x.toFixed(2), c.y.toFixed(2));
+    }
+    rows.push(row);
+  }
+  if (hasEle()) {
+    rows[0].push(t(M.csv.gpx), t(M.csv.ecart));
+    lastMulti.forEach((p, i) => { const d = diffOf(p); rows[i + 1].push(p.ele != null && !isNaN(p.ele) ? p.ele.toFixed(2) : "", d !== null ? d.toFixed(2) : ""); });
+  }
+  downloadCSV(rows, t(M.csvName));
+});
+
+function downloadCSV(rows, name) {
+  const csv = rows.map(r => r.join(";")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
+  a.download = name;
+  a.click();
+}
+
+// --- Charger un fichier de points (.txt ou .csv) dans « Plusieurs points » ---
+(function () {
+  const MAX = 1000;
+  const say = (t2, err) => { const m = $("fileMsg"); m.textContent = t2; m.className = "small" + (err ? " err" : ""); };
+  const fmtPt = p => p.lat.toFixed(7) + ", " + p.lon.toFixed(7) + (p.ele != null && !isNaN(p.ele) ? ", " + Math.round(p.ele * 100) / 100 : "");
+  const valid = p => p && !isNaN(p.lat) && !isNaN(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180;
+
+  function parseKml(text) {
+    const v = kmlVertices(text);
+    if (!v) return null;
+    return { pts: v.pts.map(fmtPt), skipped: v.skipped };
+  }
+
+  function parseGpx(text) {
+    const doc = new DOMParser().parseFromString(text, "application/xml");
+    if (doc.getElementsByTagName("parsererror").length) return null;
+    let nodes = doc.getElementsByTagName("trkpt");
+    if (!nodes.length) nodes = doc.getElementsByTagName("rtept");
+    if (!nodes.length) nodes = doc.getElementsByTagName("wpt");
+    const pts = []; let skipped = 0;
+    for (const n of nodes) {
+      const e = n.getElementsByTagName("ele")[0];
+      const p = { lat: num(n.getAttribute("lat")), lon: num(n.getAttribute("lon")), ele: e ? num(e.textContent) : NaN };
+      if (valid(p)) pts.push(fmtPt(p)); else skipped++;
+    }
+    return { pts, skipped };
+  }
+
+  function parsePointsFile(text) {
+    const lines = text.replace(/^\ufeff/, "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const pts = []; let skipped = 0, latI = -1, lonI = -1, eleI = -1, delim = ",", start = 0;
+    if (lines.length && /[a-z]/i.test(lines[0]) && !lines[0].includes("°")) {   // première ligne = en-têtes
+      const h = lines[0];
+      delim = h.includes(";") ? ";" : h.includes("\t") ? "\t" : ",";
+      const cols = h.split(delim).map(c => c.trim().toLowerCase());
+      latI = cols.findIndex(c => /^(lat|latitude|breedtegraad)/.test(c));
+      lonI = cols.findIndex(c => /^(lon|lng|long|longitude|lengtegraad)/.test(c));
+      eleI = cols.findIndex(c => /^(ele|elevation|altitude_gpx|hoogte_gps|alt_gps)/.test(c));
+      start = 1;
+    }
+    for (let i = start; i < lines.length; i++) {
+      const line = lines[i]; let p = null;
+      if (latI >= 0 && lonI >= 0) {
+        const f = line.split(delim);
+        p = { lat: num(f[latI]), lon: num(f[lonI]), ele: eleI >= 0 ? num(f[eleI]) : NaN };
+      } else if (line.includes(";") || line.includes("\t")) {
+        const n = line.split(/[;\t]/).map(num).filter(v => !isNaN(v));
+        p = n.length >= 2 ? { lat: n[0], lon: n[1] } : null;
+      } else {
+        p = parse(line);
+      }
+      if (valid(p)) pts.push(fmtPt(p)); else skipped++;
+    }
+    return { pts, skipped };
+  }
+
+  $("clearN").addEventListener("click", () => {
+    $("coordsN").value = ""; $("fileMsg").textContent = "";
+    $("tableN").innerHTML = ""; $("msgN").textContent = ""; $("csv").style.display = "none";
+    lastMulti = [];
+    renderToken++;
+  });
+  $("loadN").addEventListener("click", () => $("fileN").click());
+  $("fileN").addEventListener("change", () => {
+    const file = $("fileN").files && $("fileN").files[0];
+    if (!file) return;
+    const rd = new FileReader();
+    rd.onerror = () => say(t(M.fileT.err), true);
+    rd.onload = () => {
+      const text = String(rd.result || "");
+      const gpx = /<gpx[\s>]/i.test(text), kml = /<kml[\s>]/i.test(text);
+      const r = gpx ? parseGpx(text) : kml ? parseKml(text) : parsePointsFile(text);
+      if (!r || !r.pts.length) { say(t(M.fileT.none), true); return; }
+      let pts = r.pts, note = "";
+      const cur = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
+      const room = Math.max(0, MAX - cur.length);
+      if (pts.length > room) {
+        if ((gpx || kml) && room > 1) {   // une trace GPX est réduite régulièrement pour garder sa forme complète
+          const n = pts.length;
+          pts = Array.from({ length: room }, (_, i) => pts[Math.round(i * (n - 1) / (room - 1))]);
+          note = " " + t(M.fileT.thin, n, room);
+        } else { pts = pts.slice(0, room); note = " " + t(M.fileT.cap); }
+      }
+      $("coordsN").value = cur.concat(pts).join("\n");
+      say(t(M.fileT.added, pts.length, r.skipped) + note);
+    };
+    rd.readAsText(file);
+    $("fileN").value = "";
+  });
+})();
+
+// --- Conversion latitude / longitude (WGS84) vers RGF93 / Lambert 93 (EPSG:2154) ---
+// Projection conique conforme à 2 parallèles (44° et 49°), origine 46,5° N / 3° E, ellipsoïde GRS80.
+function toLambert93(lat, lon) {
+  const a = 6378137, e = 0.0818191910428158, rad = Math.PI / 180;
+  const m = p => Math.cos(p) / Math.sqrt(1 - e * e * Math.sin(p) ** 2);
+  const t2 = p => Math.tan(Math.PI / 4 - p / 2) / Math.pow((1 - e * Math.sin(p)) / (1 + e * Math.sin(p)), e / 2);
+  const p1 = 44 * rad, p2 = 49 * rad, p0 = 46.5 * rad, l0 = 3 * rad;
+  const n = (Math.log(m(p1)) - Math.log(m(p2))) / (Math.log(t2(p1)) - Math.log(t2(p2)));
+  const F = m(p1) / (n * Math.pow(t2(p1), n));
+  const rho = a * F * Math.pow(t2(lat * rad), n), rho0 = a * F * Math.pow(t2(p0), n);
+  const th = n * (lon * rad - l0);
+  return { x: 700000 + rho * Math.sin(th), y: 6600000 + rho0 - rho * Math.cos(th) };
+}
+
+// --- Coniques conformes RGF93 : zones CC42 à CC50 (EPSG:3942 à 3950) ---
+// 9 zones de 1° de large (CC4x couvre x-1° à x+1°), parallèle d'origine x, méridien 3° E,
+// parallèles standards x-0,75° et x+0,75°, X0 = 1 700 000 m, Y0 = 1 200 000 + (x-42) × 1 000 000 m.
+function toCC(lat, lon, zone) {
+  const a = 6378137, e = 0.0818191910428158, rad = Math.PI / 180;
+  const m = p => Math.cos(p) / Math.sqrt(1 - e * e * Math.sin(p) ** 2);
+  const t2 = p => Math.tan(Math.PI / 4 - p / 2) / Math.pow((1 - e * Math.sin(p)) / (1 + e * Math.sin(p)), e / 2);
+  const p0 = zone * rad, p1 = (zone - 0.75) * rad, p2 = (zone + 0.75) * rad, l0 = 3 * rad;
+  const n = (Math.log(m(p1)) - Math.log(m(p2))) / (Math.log(t2(p1)) - Math.log(t2(p2)));
+  const F = m(p1) / (n * Math.pow(t2(p1), n));
+  const rho = a * F * Math.pow(t2(lat * rad), n), rho0 = a * F * Math.pow(t2(p0), n);
+  const th = n * (lon * rad - l0);
+  return { x: 1700000 + rho * Math.sin(th), y: 1200000 + (zone - 42) * 1000000 + rho0 - rho * Math.cos(th) };
+}
+function ccZone(lat) { return Math.min(50, Math.max(42, Math.round(lat))); }
+(function () {
+  let last = "";
+  const out = $("l93res"), copy = $("copyL93");
+  const reset = () => { out.textContent = ""; out.className = "small"; copy.style.display = "none"; last = ""; };
+  $("toL93").addEventListener("click", () => {
+    reset();
+    const p = parse($("coord").value);
+    if (!p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180) {
+      out.className = "small err"; out.textContent = t(M.coordBadFirst); return;
+    }
+    const r = toLambert93(p.lat, p.lon);
+    const f = v => v.toLocaleString(LANG === "fr" ? "fr-FR" : "nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    last = r.x.toFixed(2) + ";" + r.y.toFixed(2);
+    out.innerHTML = t(M.l93Title) + "<br>" + t(M.l93X) + "<b>" + f(r.x) + " m</b><br>" + t(M.l93Y) + "<b>" + f(r.y) + " m</b>";
+    if (p.lat < 41 || p.lat > 51.5 || p.lon < -5.5 || p.lon > 10)
+      out.innerHTML += "<br>" + t(M.l93Outside);
+    copy.style.display = "block";
+  });
+  copy.addEventListener("click", () => navigator.clipboard.writeText(last));
+  $("coord").addEventListener("input", reset);
+})();
+
+// --- Envoyer le point courant vers « Plusieurs points » ou « Profil » ---
+(function () {
+  const say = (t2, err) => { const m = $("sendMsg"); m.textContent = t2; m.className = "small" + (err ? " err" : ""); };
+  const current = () => {
+    const p = parse($("coord").value);
+    if (!p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180) { say(t(M.sendT.bad), true); return null; }
+    return p.lat.toFixed(7) + ", " + p.lon.toFixed(7);
+  };
+  $("toN").addEventListener("click", () => {
+    const line = current(); if (!line) return;
+    const lines = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
+    if (lines.includes(line)) { say(t(M.sendT.dup)); return; }
+    lines.push(line);
+    $("coordsN").value = lines.join("\n");
+    say(t(M.sendT.added, lines.length));
+  });
+  $("toA").addEventListener("click", () => { const line = current(); if (line) { $("ptA").value = line; say(t(M.sendT.seta)); } });
+  $("toB").addEventListener("click", () => { const line = current(); if (line) { $("ptB").value = line; say(t(M.sendT.setb)); } });
+  $("coord").addEventListener("input", () => { $("sendMsg").textContent = ""; });
+})();
+
+// --- Mode profil ---
+let lastProfile = [];
+
+function haversine(a, b) {
+  const R = 6371008.8, rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad, dLon = (b.lon - a.lon) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function fmtDist(m) { return m < 1000 ? Math.round(m) + " m" : parseFloat((m / 1000).toFixed(m < 10000 ? 2 : 1)) + " km"; }
+
+function niceStep(range, target) {
+  const raw = range / target, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+}
+
+const profElevations = getElevations;
+
+$("swapAB").addEventListener("click", () => {
+  const a = $("ptA").value; $("ptA").value = $("ptB").value; $("ptB").value = a;
+});
+
+function readTrack(text) {
+  if (/<kml[\s>]/i.test(text)) { const v = kmlVertices(text); return v ? v.pts : null; }
+  const doc = new DOMParser().parseFromString(text, "application/xml");
+  if (doc.getElementsByTagName("parsererror").length) return null;
+  let nodes = doc.getElementsByTagName("trkpt");
+  if (!nodes.length) nodes = doc.getElementsByTagName("rtept");
+  const track = [];
+  for (const n of nodes) {
+    const e = n.getElementsByTagName("ele")[0];
+    const p = { lat: num(n.getAttribute("lat")), lon: num(n.getAttribute("lon")), ele: e ? num(e.textContent) : NaN };
+    if (!isNaN(p.lat) && !isNaN(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180) track.push(p);
+  }
+  return track;
+}
+
+// Rééchantillonne la trace en N points régulièrement espacés le long de son parcours (altitude GPX interpolée)
+function resampleTrack(track, N) {
+  const cum = [0];
+  for (let i = 1; i < track.length; i++) cum.push(cum[i - 1] + haversine(track[i - 1], track[i]));
+  const total = cum[cum.length - 1];
+  if (!(total >= 1)) return null;
+  const pts = [], gps = [];
+  let j = 1;
+  for (let k = 0; k < N; k++) {
+    const d = total * k / (N - 1);
+    while (j < track.length - 1 && cum[j] < d) j++;
+    const a = track[j - 1], b = track[j], seg = cum[j] - cum[j - 1];
+    const t2 = seg > 0 ? Math.min(1, Math.max(0, (d - cum[j - 1]) / seg)) : 0;
+    pts.push({ lat: a.lat + (b.lat - a.lat) * t2, lon: a.lon + (b.lon - a.lon) * t2 });
+    const ok = !isNaN(a.ele) && !isNaN(b.ele);
+    gps.push(ok ? a.ele + (b.ele - a.ele) * t2 : null);
+  }
+  return { pts, gps, total };
+}
+
+async function runProfile(pts, total, gps) {
+  const msg = $("msgP");
+  try {
+    const z = await profElevations(pts, $("resourceP").value);
+    if (!z.length || z.every(v => v === null)) { msg.className = "err"; msg.textContent = t(M.PROF.noData); return; }
+    const N = pts.length;
+    lastProfile = z.map((zi, i) => ({ rang: i + 1, d: total * i / (N - 1), lat: pts[i].lat, lon: pts[i].lon, z: zi, gps: gps ? gps[i] : null }));
+    $("profResult").style.display = "block";
+    drawProfile(z, total, pts, gps);
+    const valid = z.filter(v => v !== null);
+    const first = z.find(v => v !== null), last = [...z].reverse().find(v => v !== null);
+    const dPlus = valid.reduce((s, v, i) => i && valid[i - 1] < v ? s + (v - valid[i - 1]) : s, 0);
+    const dMoins = valid.reduce((s, v, i) => i && valid[i - 1] > v ? s + (valid[i - 1] - v) : s, 0);
+    const pente = (last - first) / total * 100;
+    const T = M.PROF.stats;
+    const items = [
+      [t(T.dist), fmtDist(total)], [t(T.pente), (pente.toFixed(1) === "-0.0" ? "0.0" : (pente > 0 ? "+" : "") + pente.toFixed(1)) + " %"],
+      [t(T.start), first.toFixed(1) + " m"], [t(T.end), last.toFixed(1) + " m"],
+      [t(T.min), Math.min(...valid).toFixed(1) + " m"], [t(T.max), Math.max(...valid).toFixed(1) + " m"],
+      [t(T.up), "+ " + Math.round(dPlus) + " m"], [t(T.down), "− " + Math.round(dMoins) + " m"]
+    ];
+    $("profInfo").innerHTML = items.map(([k, v]) => "<div><span>" + k + "</span><b>" + v + "</b></div>").join("");
+    // Légende et écart moyen entre l'altitude du GPS (fichier GPX) et celle de la source
+    if (gps) {
+      $("profLegend").innerHTML = '<span class="lg"></span>' + t(M.PROF.srcLabel) + ' &nbsp; <span class="lg lg2"></span>' + t(M.PROF.gpsLabel);
+      const ds = z.map((v, i) => v !== null && gps[i] !== null ? gps[i] - v : null).filter(d => d !== null);
+      if (ds.length) {
+        const mean = ds.reduce((s, d) => s + d, 0) / ds.length, abs = ds.reduce((s, d) => s + Math.abs(d), 0) / ds.length;
+        $("profGps").textContent = t(M.ELE.summary, mean, abs, ds.length);
+      } else $("profGps").textContent = "";
+    } else { $("profLegend").innerHTML = ""; $("profGps").textContent = ""; }
+    msg.className = ""; msg.textContent = "";
+    $("csvP").style.display = "block";
+  } catch (e) {
+    msg.className = "err"; msg.textContent = t(M.PROF.error);
+  }
+}
+
+$("goP").addEventListener("click", async () => {
+  const msg = $("msgP");
+  msg.textContent = ""; msg.className = "";
+  $("csvP").style.display = "none";
+  const A = parse($("ptA").value), B = parse($("ptB").value);
+  const bad = p => !p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180;
+  if (bad(A) || bad(B)) { msg.className = "err"; msg.textContent = t(M.PROF.badCoords); return; }
+  const total = haversine(A, B);
+  if (total < 1) { msg.className = "err"; msg.textContent = t(M.PROF.samePoint); return; }
+  const N = parseInt($("nP").value, 10) || 100, pts = [];
+  msg.textContent = t(M.PROF.computing, N);
+  for (let i = 0; i < N; i++) {
+    const t2 = i / (N - 1);
+    pts.push({ lat: A.lat + (B.lat - A.lat) * t2, lon: A.lon + (B.lon - A.lon) * t2 });
+  }
+  await runProfile(pts, total, null);
+});
+
+// Profil le long d'une trace GPX (au lieu d'une ligne droite entre A et B)
+$("loadP").addEventListener("click", () => $("fileP").click());
+$("fileP").addEventListener("change", () => {
+  const file = $("fileP").files && $("fileP").files[0];
+  if (!file) return;
+  const msg = $("msgP");
+  msg.textContent = ""; msg.className = "";
+  const rd = new FileReader();
+  rd.onerror = () => { msg.className = "err"; msg.textContent = t(M.PROF.fileErr); };
+  rd.onload = async () => {
+    const track = readTrack(String(rd.result || ""));
+    const N = parseInt($("nP").value, 10) || 100;
+    const rs = track && track.length >= 2 ? resampleTrack(track, N) : null;
+    if (!rs) { msg.className = "err"; msg.textContent = t(M.PROF.noTrack); return; }
+    const fmt = p => p.lat.toFixed(7) + ", " + p.lon.toFixed(7);
+    $("ptA").value = fmt(track[0]); $("ptB").value = fmt(track[track.length - 1]);
+    $("csvP").style.display = "none";
+    msg.textContent = t(M.PROF.computing, N);
+    await runProfile(rs.pts, rs.total, rs.gps.some(v => v !== null) ? rs.gps : null);
+  };
+  rd.readAsText(file);
+  $("fileP").value = "";
+});
+
+function drawProfile(z, total, pts, gps) {
+  const W = 640, H = 260, L = 48, R = 14, T = 12, B = 30;
+  const valid = z.filter(v => v !== null);
+  const all = valid.concat((gps || []).filter(v => v !== null));
+  let zmin = Math.min(...all), zmax = Math.max(...all);
+  if (zmax - zmin < 4) { const c = (zmax + zmin) / 2; zmin = c - 2; zmax = c + 2; }
+  const step = niceStep(zmax - zmin, 4);
+  const lo = Math.floor(zmin / step) * step, hi = Math.ceil(zmax / step) * step;
+  const PW = W - L - R, PH = H - T - B;
+  const X = i => L + (i / (z.length - 1)) * PW;
+  const Y = v => T + (1 - (v - lo) / (hi - lo)) * PH;
+  const f = n => n.toFixed(1);
+
+  let g = "";
+  for (let v = lo; v <= hi + step / 1000; v += step) {
+    const y = Y(v);
+    g += '<line class="pgrid" x1="' + L + '" x2="' + (W - R) + '" y1="' + f(y) + '" y2="' + f(y) + '"/>' +
+         '<text class="plab" x="' + (L - 6) + '" y="' + f(y + 4) + '" text-anchor="end">' + (Math.round(v * 10) / 10) + '</text>';
+  }
+  const dstep = niceStep(total, 5);
+  for (let d = 0; d <= total + dstep / 1000; d += dstep) {
+    const x = L + (d / total) * PW;
+    g += '<line class="ptick" x1="' + f(x) + '" x2="' + f(x) + '" y1="' + (H - B) + '" y2="' + (H - B + 4) + '"/>' +
+         '<text class="plab" x="' + f(x) + '" y="' + (H - B + 17) + '" text-anchor="' + (x > W - R - 20 ? "end" : "middle") + '">' + fmtDist(d) + '</text>';
+  }
+
+  // Courbe et surface, interrompues là où il n'y a pas de données
+  let line = "", area = "", run = [];
+  const flush = () => {
+    if (run.length > 1) {
+      const p = run.map(([x, y]) => f(x) + "," + f(y)).join("L");
+      line += "M" + p;
+      area += "M" + f(run[0][0]) + "," + (H - B) + "L" + p + "L" + f(run[run.length - 1][0]) + "," + (H - B) + "Z";
+    }
+    run = [];
+  };
+  z.forEach((v, i) => { if (v === null) flush(); else run.push([X(i), Y(v)]); });
+  flush();
+
+  let gline = "";
+  if (gps) {
+    let r = [];
+    const fl = () => { if (r.length > 1) gline += "M" + r.map(([x, y]) => f(x) + "," + f(y)).join("L"); r = []; };
+    gps.forEach((v, i) => { if (v === null) fl(); else r.push([X(i), Y(v)]); });
+    fl();
+  }
+
+  const svg = $("chart");
+  svg.innerHTML = g + '<path class="parea" d="' + area + '"/><path class="pline" d="' + line + '"/>' + (gline ? '<path class="pgps" d="' + gline + '"/>' : '') +
+    '<g id="pcur" style="display:none"><line class="pcl" y1="' + T + '" y2="' + (H - B) + '"/><circle class="pdot" r="5"/></g>' +
+    '<rect id="pover" x="' + L + '" y="' + T + '" width="' + PW + '" height="' + PH + '" fill="transparent" style="touch-action:pan-y"/>';
+
+  const hover = $("profHover"), cur = $("pcur"), dot = cur.querySelector("circle"), cl = cur.querySelector("line");
+  hover.textContent = t(M.PROF.hint);
+  const at = clientX => {
+    const r = svg.getBoundingClientRect();
+    const vx = (clientX - r.left) / r.width * W;
+    const i = Math.max(0, Math.min(z.length - 1, Math.round((vx - L) / PW * (z.length - 1))));
+    const x = X(i);
+    cl.setAttribute("x1", f(x)); cl.setAttribute("x2", f(x));
+    if (z[i] === null) {
+      dot.style.display = "none";
+      hover.textContent = t(M.PROF.hoverD) + " " + fmtDist(total * i / (z.length - 1)) + " · " + t(M.PROF.noPoint);
+    } else {
+      dot.style.display = ""; dot.setAttribute("cx", f(x)); dot.setAttribute("cy", f(Y(z[i])));
+      hover.textContent = t(M.PROF.hoverD) + " " + fmtDist(total * i / (z.length - 1)) + " · " + t(M.PROF.hoverZ) + " " + z[i].toFixed(1) + " m · " + (gps && gps[i] != null ? "GPX " + gps[i].toFixed(1) + " m · " : "") +
+        pts[i].lat.toFixed(5) + ", " + pts[i].lon.toFixed(5);
+    }
+    cur.style.display = "";
+  };
+  const over = $("pover");
+  over.addEventListener("pointermove", e => at(e.clientX));
+  over.addEventListener("pointerdown", e => at(e.clientX));
+  over.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") { cur.style.display = "none"; hover.textContent = t(M.PROF.hint); } });
+}
+
+$("csvP").addEventListener("click", () => {
+  const rows = [[t(M.csv.regel), "distance_m", t(M.csv.lat), t(M.csv.lon), t(M.csv.alt)]];
+  for (const p of lastProfile) rows.push([p.rang, Math.round(p.d), p.lat.toFixed(7), p.lon.toFixed(7), p.z === null ? "" : p.z.toFixed(2)]);
+  if (lastProfile.some(p => p.gps != null)) {
+    rows[0].push(t(M.csv.gpx));
+    lastProfile.forEach((p, i) => rows[i + 1].push(p.gps != null ? p.gps.toFixed(2) : ""));
+  }
+  downloadCSV(rows, t(M.profName));
+});
+
+// --- Initialisation ---
+setPays(PAYS);
+applyLang();
+updateMapLinksFromInput();
+</script>
 </body>
 </html>
