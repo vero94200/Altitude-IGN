@@ -111,7 +111,7 @@
   <label for="coord" data-i18n="coordLabel">Coordonnées (copiées depuis Google Maps) — WGS 84, EPSG:4326</label>
   <input id="coord" inputmode="text" autocomplete="off">
 
-  <p data-i18n-html="openIn">Ouvrir dans <a id="gmaps" target="_blank" rel="noopener">Google Maps</a> · <a id="amaps" target="_blank" rel="noopener">Plans (Apple)</a></p>
+  <p data-i18n-html="openIn">Ouvrir dans <a id="gmaps" target="_blank" rel="noopener">Google Maps</a> · <a id="amaps" target="_blank" rel="noopener">Plans (Apple)</a> · <a id="gearth" target="_blank" rel="noopener">Google Earth</a><span class="only-fr"> · <a id="ign" target="_blank" rel="noopener">Carte IGN</a></span></p>
 
   <label for="resource" data-i18n="srcLabel">Source</label>
   <select id="resource"></select>
@@ -221,8 +221,8 @@ const I18N = {
   addrLabel: { fr: "Chercher une adresse (optionnel)", nl: "Zoek een adres (optioneel)" },
   coordLabel: { fr: "Coordonnées (copiées depuis Google Maps) — WGS 84, EPSG:4326",
                 nl: "Coördinaten (gekopieerd uit Google Maps) — WGS 84, EPSG:4326" },
-  openIn: { fr: "Ouvrir dans <a id=\"gmaps\" target=\"_blank\" rel=\"noopener\">Google Maps</a> · <a id=\"amaps\" target=\"_blank\" rel=\"noopener\">Plans (Apple)</a>",
-            nl: "Openen in <a id=\"gmaps\" target=\"_blank\" rel=\"noopener\">Google Maps</a> · <a id=\"amaps\" target=\"_blank\" rel=\"noopener\">Kaarten (Apple)</a>" },
+  openIn: { fr: "Ouvrir dans <a id=\"gmaps\" target=\"_blank\" rel=\"noopener\">Google Maps</a> · <a id=\"amaps\" target=\"_blank\" rel=\"noopener\">Plans (Apple)</a> · <a id=\"gearth\" target=\"_blank\" rel=\"noopener\">Google Earth</a><span class=\"only-fr\"> · <a id=\"ign\" target=\"_blank\" rel=\"noopener\">Carte IGN</a></span>",
+            nl: "Openen in <a id=\"gmaps\" target=\"_blank\" rel=\"noopener\">Google Maps</a> · <a id=\"amaps\" target=\"_blank\" rel=\"noopener\">Kaarten (Apple)</a> · <a id=\"gearth\" target=\"_blank\" rel=\"noopener\">Google Earth</a><span class=\"only-fr\"> · <a id=\"ign\" target=\"_blank\" rel=\"noopener\">IGN-kaart</a></span>" },
   srcLabel:  { fr: "Source", nl: "Bron" },
   srcLabel2: { fr: "Source", nl: "Bron" },
   srcLabel3: { fr: "Source", nl: "Bron" },
@@ -387,6 +387,7 @@ function applyLang() {
   document.querySelectorAll("#swPays button").forEach(b => b.classList.toggle("active", b.dataset.pays === PAYS));
   fillSources();
   applyCountryPlaceholders();
+  updateMapLinksFromInput();
 }
 function applyCountryPlaceholders() {
   const ex = EX[PAYS];
@@ -425,11 +426,18 @@ function setMapLinks(lat, lon) {
   $("gmaps").href = "https://www.google.com/maps?q=" + q;
   // S'ouvre dans Plans sur iPhone/iPad/Mac, Google Maps sur Android
   $("amaps").href = "https://maps.apple.com/?q=" + q;
+  // Google Earth (web) : PC et smartphone (ouvre l'appli Google Earth si elle est installée)
+  $("gearth").href = "https://earth.google.com/web/@" + lat.toFixed(7) + "," + lon.toFixed(7) + ",0a,1000d,35y,0h,0t,0r";
+  // Géoportail (IGN) : carte adaptée aux écrans de PC et de smartphone
+  $("ign").href = "https://www.geoportail.gouv.fr/carte?c=" + lon.toFixed(7) + "," + lat.toFixed(7) +
+    "&z=17&l0=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2::GEOPORTAIL:OGC:WMTS(1)&permalink=yes";
 }
 // Sans coordonnées valides, les liens restent actifs et ouvrent simplement l'application de cartes
 function clearMapLinks() {
   $("gmaps").href = "https://www.google.com/maps";
   $("amaps").href = "https://maps.apple.com/";
+  $("gearth").href = "https://earth.google.com/web/";
+  $("ign").href = "https://www.geoportail.gouv.fr/carte";
 }
 // Liens mis à jour en direct dès que les coordonnées sont reconnues
 function updateMapLinksFromInput() {
