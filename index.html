@@ -150,9 +150,9 @@
 <div id="modeN" class="mode">
   <label for="coordsN" data-i18n="coordsNLabel">Une coordonnée par ligne (lat, lon) — WGS 84, EPSG:4326</label>
   <textarea id="coordsN"></textarea>
-  <input type="file" id="fileN" accept=".txt,.csv,.gpx,.kml,text/plain,text/csv,application/gpx+xml,application/vnd.google-earth.kml+xml" hidden>
+  <input type="file" id="fileN" accept=".txt,.csv,.gpx,.kml,.geojson,.json,text/plain,text/csv,application/gpx+xml,application/vnd.google-earth.kml+xml,application/geo+json,application/json" hidden>
   <div class="send">
-    <button id="loadN" class="sec" data-i18n="loadN">Charger un fichier de points (.txt, .csv, .gpx ou .kml)</button>
+    <button id="loadN" class="sec" data-i18n="loadN">Charger un fichier de points (.txt, .csv, .gpx, .kml ou .geojson)</button>
     <button id="clearN" class="sec" data-i18n="clearN">Vider la liste</button>
   </div>
   <div id="fileMsg" class="small" role="status"></div>
@@ -191,8 +191,8 @@
   </div>
   <button id="goP" data-i18n="goP">Tracer le profil</button>
   <button id="swapAB" class="sec" data-i18n="swapAB">Inverser A et B</button>
-  <input type="file" id="fileP" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml" hidden>
-  <button id="loadP" class="sec" data-i18n="loadP">Tracer le profil d’une trace GPX ou KML</button>
+  <input type="file" id="fileP" accept=".gpx,.kml,.geojson,.json,application/gpx+xml,application/vnd.google-earth.kml+xml,application/geo+json,application/json" hidden>
+  <button id="loadP" class="sec" data-i18n="loadP">Tracer le profil d’une trace GPX, KML ou GeoJSON</button>
   <div id="msgP"></div>
   <div id="profResult" style="display:none">
     <svg id="chart" viewBox="0 0 640 260" role="img" aria-label="Profil altimétrique"></svg>
@@ -240,7 +240,7 @@ const I18N = {
   openReq:{ fr: "Ouvrir la requête", nl: "Verzoek openen" },
   coordsNLabel: { fr: "Une coordonnée par ligne (lat, lon) — WGS 84, EPSG:4326",
                   nl: "Eén coördinaat per regel (lat, lon) — WGS 84, EPSG:4326" },
-  loadN:  { fr: "Charger un fichier de points (.txt, .csv, .gpx ou .kml)", nl: "Bestand met punten laden (.txt, .csv, .gpx of .kml)" },
+  loadN:  { fr: "Charger un fichier de points (.txt, .csv, .gpx, .kml ou .geojson)", nl: "Bestand met punten laden (.txt, .csv, .gpx, .kml of .geojson)" },
   clearN: { fr: "Vider la liste", nl: "Lijst wissen" },
   coordsNHelp: {
     fr: "Une ligne par point : « latitude, longitude » (séparés par une virgule, un point-virgule ou une tabulation). Un fichier CSV avec les en-têtes latitude / longitude est aussi accepté, par exemple celui exporté par cette page. Un fichier GPX (trace, itinéraire ou points de passage) est aussi accepté. Un fichier KML contenant une polyligne est lu sommet par sommet. Une troisième valeur facultative sur une ligne (l’altitude du fichier GPX) est comparée à l’altitude calculée.",
@@ -252,7 +252,7 @@ const I18N = {
   nP:     { fr: "Nombre de points du profil", nl: "Aantal punten van het profiel" },
   goP:    { fr: "Tracer le profil", nl: "Profiel tekenen" },
   swapAB: { fr: "Inverser A et B", nl: "A en B omwisselen" },
-  loadP:  { fr: "Tracer le profil d’une trace GPX ou KML", nl: "Profiel van een GPX- of KML-track tekenen" },
+  loadP:  { fr: "Tracer le profil d’une trace GPX, KML ou GeoJSON", nl: "Profiel van een GPX-, KML- of GeoJSON-track tekenen" },
   csvP:   { fr: "Exporter le profil en CSV", nl: "Profiel exporteren als CSV" },
   profilAria: { fr: "Profil altimétrique", nl: "Hoogteprofiel" },
   titrePage:  { fr: "Altitude – France / Hoogte – Frankrijk", nl: "Hoogte – België / Altitude – Belgique" },
@@ -347,8 +347,8 @@ const M = {
     hoverD:    { fr: "Distance", nl: "Afstand" },
     hoverZ:    { fr: "Altitude", nl: "Hoogte" },
     noPoint:   { fr: "pas de données", nl: "geen gegevens" },
-    noTrack:   { fr: "Aucune trace trouvée dans ce fichier (GPX : trace ou itinéraire ; KML : polyligne ; au moins 2 points).",
-                 nl: "Geen track gevonden in dit bestand (GPX: track of route; KML: polylijn; minstens 2 punten)." },
+    noTrack:   { fr: "Aucune trace trouvée dans ce fichier (GPX : trace ou itinéraire ; KML ou GeoJSON : polyligne ; au moins 2 points).",
+                 nl: "Geen track gevonden in dit bestand (GPX: track of route; KML of GeoJSON: polylijn; minstens 2 punten)." },
     fileErr:   { fr: "Lecture du fichier impossible.", nl: "Het bestand kon niet gelezen worden." },
     srcLabel:  { fr: "Source choisie", nl: "Gekozen bron" },
     gpsLabel:  { fr: "Altitude GPX (appareil)", nl: "GPX-hoogte (toestel)" },
@@ -786,6 +786,38 @@ function kmlVertices(text) {
   return { pts, skipped };
 }
 
+// Sommets d'un fichier GeoJSON (export cartes.gouv.fr, geojson.io...). Attention : GeoJSON écrit [longitude, latitude, altitude].
+// Priorité aux lignes, sinon aux contours de polygones, sinon aux points (comme pour le KML).
+function geojsonVertices(text) {
+  let j;
+  try { j = JSON.parse(text.replace(/^\ufeff/, "")); } catch (e) { return null; }
+  const lines = [], rings = [], points = [];
+  (function walk(g) {
+    if (!g || typeof g !== "object") return;
+    switch (g.type) {
+      case "FeatureCollection": (g.features || []).forEach(walk); break;
+      case "Feature": walk(g.geometry); break;
+      case "GeometryCollection": (g.geometries || []).forEach(walk); break;
+      case "LineString": lines.push(g.coordinates); break;
+      case "MultiLineString": (g.coordinates || []).forEach(c => lines.push(c)); break;
+      case "Polygon": (g.coordinates || []).forEach(c => rings.push(c)); break;
+      case "MultiPolygon": (g.coordinates || []).forEach(poly => (poly || []).forEach(c => rings.push(c))); break;
+      case "Point": points.push(g.coordinates); break;
+      case "MultiPoint": (g.coordinates || []).forEach(c => points.push(c)); break;
+    }
+  })(j);
+  const src = lines.length ? lines : rings.length ? rings : points.length ? [points] : [];
+  const pts = []; let skipped = 0;
+  for (const seq of src) for (const c of (Array.isArray(seq) ? seq : [])) {
+    const p = Array.isArray(c) ? { lon: parseFloat(c[0]), lat: parseFloat(c[1]), ele: c.length > 2 ? parseFloat(c[2]) : NaN } : null;
+    if (!p || isNaN(p.lat) || isNaN(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180) skipped++; else pts.push(p);
+  }
+  // Une altitude toujours à 0 est un simple remplissage, pas une mesure
+  if (pts.every(p => isNaN(p.ele) || p.ele === 0)) pts.forEach(p => { p.ele = NaN; });
+  return { pts, skipped };
+}
+const isGeojson = text => /^\s*\{/.test(text.replace(/^\ufeff/, ""));
+
 const sg = d => (d > 0 ? "+" : d < 0 ? "−" : "") + Math.abs(d).toFixed(1) + " m";
 // Une ligne peut porter une 3e valeur : l'altitude relevée par l'appareil (fichier GPX), comparée à l'altitude calculée
 function lineEle(l) {
@@ -923,6 +955,12 @@ function downloadCSV(rows, name) {
     return { pts: v.pts.map(fmtPt), skipped: v.skipped };
   }
 
+  function parseGeojson(text) {
+    const v = geojsonVertices(text);
+    if (!v) return null;
+    return { pts: v.pts.map(fmtPt), skipped: v.skipped };
+  }
+
   function parseGpx(text) {
     const doc = new DOMParser().parseFromString(text, "application/xml");
     if (doc.getElementsByTagName("parsererror").length) return null;
@@ -980,14 +1018,14 @@ function downloadCSV(rows, name) {
     rd.onerror = () => say(t(M.fileT.err), true);
     rd.onload = () => {
       const text = String(rd.result || "");
-      const gpx = /<gpx[\s>]/i.test(text), kml = /<kml[\s>]/i.test(text);
-      const r = gpx ? parseGpx(text) : kml ? parseKml(text) : parsePointsFile(text);
+      const gpx = /<gpx[\s>]/i.test(text), kml = /<kml[\s>]/i.test(text), gj = !gpx && !kml && isGeojson(text);
+      const r = gpx ? parseGpx(text) : kml ? parseKml(text) : gj ? parseGeojson(text) : parsePointsFile(text);
       if (!r || !r.pts.length) { say(t(M.fileT.none), true); return; }
       let pts = r.pts, note = "";
       const cur = $("coordsN").value.split("\n").map(l => l.trim()).filter(Boolean);
       const room = Math.max(0, MAX - cur.length);
       if (pts.length > room) {
-        if ((gpx || kml) && room > 1) {   // une trace GPX est réduite régulièrement pour garder sa forme complète
+        if ((gpx || kml || gj) && room > 1) {   // une trace GPX est réduite régulièrement pour garder sa forme complète
           const n = pts.length;
           pts = Array.from({ length: room }, (_, i) => pts[Math.round(i * (n - 1) / (room - 1))]);
           note = " " + t(M.fileT.thin, n, room);
@@ -1161,6 +1199,7 @@ $("swapAB").addEventListener("click", () => {
 
 function readTrack(text) {
   if (/<kml[\s>]/i.test(text)) { const v = kmlVertices(text); return v ? v.pts : null; }
+  if (isGeojson(text)) { const v = geojsonVertices(text); return v ? v.pts : null; }
   const doc = new DOMParser().parseFromString(text, "application/xml");
   if (doc.getElementsByTagName("parsererror").length) return null;
   let nodes = doc.getElementsByTagName("trkpt");
